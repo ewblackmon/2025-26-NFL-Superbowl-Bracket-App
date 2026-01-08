@@ -345,3 +345,20 @@ function gradeBracket(master) {
         }
     }
 }
+
+// --- MODAL FUNCTIONS (New) ---
+function openScoringModal() {
+    document.getElementById('scoring-modal').style.display = 'block';
+}
+
+function closeScoringModal() {
+    document.getElementById('scoring-modal').style.display = 'none';
+}
+
+// Close modal if user clicks outside the box
+window.onclick = function (event) {
+    const modal = document.getElementById('scoring-modal');
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}

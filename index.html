@@ -26,7 +26,8 @@
                 <div class="btn-group">
                     <button onclick="submitBracket()">SAVE</button>
                     <button onclick="loadBracket()" class="btn-load">LOAD</button>
-                    <button id="reset-btn" class="btn-reset">RESET</button>
+                    <button onclick="openScoringModal()" class="btn-info">SCORING</button> <button id="reset-btn"
+                        class="btn-reset">RESET</button>
                 </div>
             </div>
             <div id="status-message"></div>
@@ -41,6 +42,7 @@
                     <div class="round-column champ-col" id="nfc-champ"></div>
                 </div>
             </div>
+
             <div class="super-bowl-center">
                 <div class="sb-logo">
                     <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="NFL Logo"
@@ -50,6 +52,7 @@
                 <div id="super-bowl-matchup"></div>
                 <div id="champion-display"></div>
             </div>
+
             <div class="conference-container">
                 <h2 class="conf-header afc-color">AFC</h2>
                 <div class="rounds-row right-side">
@@ -60,6 +63,35 @@
             </div>
         </div>
     </div>
+
+    <div id="scoring-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeScoringModal()">&times;</span>
+            <h2>How Scoring Works</h2>
+            <ul>
+                <li>
+                    <span class="point-badge wc">+2</span>
+                    <strong>Wild Card Round</strong> (6 Games)
+                </li>
+                <li>
+                    <span class="point-badge div">+3</span>
+                    <strong>Divisional Round</strong> (4 Games)
+                </li>
+                <li>
+                    <span class="point-badge champ">+5</span>
+                    <strong>Conference Champ</strong> (2 Games)
+                </li>
+                <li>
+                    <span class="point-badge sb">+10</span>
+                    <strong>Super Bowl Winner</strong>
+                </li>
+            </ul>
+            <div class="total-score-box">
+                Total Possible Score: <span>44</span>
+            </div>
+        </div>
+    </div>
+
     <script src="js/main.js"></script>
 </body>
 
