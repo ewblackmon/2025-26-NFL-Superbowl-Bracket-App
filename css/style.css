@@ -424,3 +424,40 @@ body {
         margin: 0 8px;
     }
 }
+
+/* --- GRADING STYLES --- */
+
+/* CORRECT (Green Glow) */
+.team.correct {
+    border-color: #00ff00 !important;
+    background: linear-gradient(to right, #2a2a2a, #1a3a1a);
+    box-shadow: 0 0 8px rgba(0, 255, 0, 0.4);
+}
+
+.team.correct::after {
+    content: "✔";
+    color: #00ff00;
+    font-weight: bold;
+    margin-left: auto;
+    padding-right: 8px;
+}
+
+/* INCORRECT (Red Border + Strikethrough) */
+.team.incorrect {
+    border-color: #ff3333 !important;
+    opacity: 0.8;
+}
+
+.team.incorrect .name {
+    text-decoration: line-through;
+    color: #ff8888;
+}
+
+/* ELIMINATED / ZOMBIE (Faded Out) */
+.team.eliminated {
+    opacity: 0.3;
+    filter: grayscale(100%);
+    border-color: #555;
+    pointer-events: none;
+    /* Can't click them anymore */
+}

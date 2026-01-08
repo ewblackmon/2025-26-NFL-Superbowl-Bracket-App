@@ -2,7 +2,6 @@
 // 1. PASTE YOUR DEPLOYED GOOGLE SCRIPT URL BETWEEN THE QUOTES BELOW:
 const scriptURL = "https://script.google.com/macros/s/AKfycbyieXUOJqeOh3l4KkrUBYmQkptpsWf-ersSvhFe80sKoUws9fnzAreARW4CrNlpeuKW9Q/exec";
 
-
 // --- DATA ---
 const teamFullNames = {
     "DEN": "Denver Broncos", "PIT": "Pittsburgh Steelers", "HOU": "Houston Texans",
@@ -31,9 +30,6 @@ const initialData = {
     }
 };
 
-const realResults = { superBowl: null, afcChamp: null, nfcChamp: null };
-
-// --- STATE ---
 let picks = {
     afc: { wcWinners: [], divWinners: [], champion: null },
     nfc: { wcWinners: [], divWinners: [], champion: null },
@@ -43,13 +39,11 @@ let picks = {
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
     refreshAllRounds();
-
     const resetBtn = document.getElementById('reset-btn');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', resetBracket);
-    }
+    if (resetBtn) resetBtn.addEventListener('click', resetBracket);
 });
 
+// --- RENDER LOGIC ---
 function refreshAllRounds() {
     renderConferenceSide('afc');
     renderConferenceSide('nfc');
@@ -58,29 +52,20 @@ function refreshAllRounds() {
 
 function renderConferenceSide(conf) {
     renderWildCard(conf);
-
     const wcWinners = picks[conf].wcWinners.filter(x => x);
-    if (wcWinners.length === 3) {
-        generateDivisionalRound(conf);
-    } else {
-        renderDivisionalPlaceholders(conf);
-    }
+    if (wcWinners.length === 3) generateDivisionalRound(conf);
+    else renderDivisionalPlaceholders(conf);
 
     const divWinners = picks[conf].divWinners.filter(x => x);
-    if (divWinners.length === 2) {
-        generateConferenceRound(conf);
-    } else {
-        renderRoundPlaceholders(conf, 'champ', 1);
-    }
+    if (divWinners.length === 2) generateConferenceRound(conf);
+    else renderRoundPlaceholders(conf, 'champ', 1);
 }
 
-// --- RENDER FUNCTIONS ---
 function renderWildCard(conf) {
     const container = document.getElementById(`${conf}-wc`);
     container.innerHTML = '';
     initialData[conf].wildCardMatchups.forEach((match, index) => {
-        const div = createMatchupDiv(match.home, match.away, conf, 'wc', index);
-        container.appendChild(div);
+        container.appendChild(createMatchupDiv(match.home, match.away, conf, 'wc', index));
     });
 }
 
@@ -126,32 +111,24 @@ function renderSuperBowl() {
             </div>
         `;
         container.appendChild(div);
-
-        if (picks.superBowlWinner) {
-            displayChampion(picks.superBowlWinner);
-        }
+        if (picks.superBowlWinner) displayChampion(picks.superBowlWinner);
     } else {
         const div = document.createElement('div');
         div.className = 'matchup';
-        div.innerHTML = `
-            <div class="team placeholder"><span class="name">NFC Champ</span></div>
-            <div class="team placeholder"><span class="name">AFC Champ</span></div>
-        `;
+        div.innerHTML = `<div class="team placeholder"><span class="name">NFC Champ</span></div><div class="team placeholder"><span class="name">AFC Champ</span></div>`;
         container.appendChild(div);
     }
 }
 
 function displayChampion(teamAbbr) {
     const champContainer = document.getElementById('champion-display');
-    const fullName = teamFullNames[teamAbbr] || teamAbbr;
-    let logoUrl = "";
-
-    const allTeams = [
+    const teamObj = [
         initialData.afc.bye, ...initialData.afc.wildCardMatchups.flatMap(m => [m.home, m.away]),
         initialData.nfc.bye, ...initialData.nfc.wildCardMatchups.flatMap(m => [m.home, m.away])
-    ];
-    const teamObj = allTeams.find(t => t.name === teamAbbr);
-    if (teamObj) logoUrl = teamObj.logo;
+    ].find(t => t.name === teamAbbr);
+
+    const fullName = teamFullNames[teamAbbr] || teamAbbr;
+    const logoUrl = teamObj ? teamObj.logo : "";
 
     champContainer.innerHTML = `
         <div class="champ-label">Predicted Champion:</div>
@@ -160,93 +137,57 @@ function displayChampion(teamAbbr) {
     `;
 }
 
-// --- PLACEHOLDER FUNCTIONS ---
+// --- HELPER FUNCTIONS ---
+function createMatchupDiv(home, away, conf, round, matchId) {
+    const div = document.createElement('div');
+    div.className = 'matchup';
+    div.innerHTML = `
+        <div class="team" data-name="${away.name}" onclick="selectWinner('${conf}', '${round}', ${matchId}, '${away.name}', ${away.seed}, this)">
+            <span class="seed">${away.seed}</span><img src="${away.logo}" class="team-logo"><span class="name">${away.name}</span>
+        </div>
+        <div class="team" data-name="${home.name}" onclick="selectWinner('${conf}', '${round}', ${matchId}, '${home.name}', ${home.seed}, this)">
+            <span class="seed">${home.seed}</span><img src="${home.logo}" class="team-logo"><span class="name">${home.name}</span>
+        </div>
+    `;
+    return div;
+}
+
 function renderDivisionalPlaceholders(conf) {
     const container = document.getElementById(`${conf}-div`);
     container.innerHTML = '';
-
-    const byeTeam = initialData[conf].bye;
-    const div1 = document.createElement('div');
-    div1.className = 'matchup';
-    div1.innerHTML = `
-        <div class="team placeholder"><span class="name">Lowest Seed</span></div>
-        <div class="team" style="cursor: default; opacity: 0.8;">
-            <span class="seed">${byeTeam.seed}</span>
-            <img src="${byeTeam.logo}" alt="${byeTeam.name}" class="team-logo">
-            <span class="name">${byeTeam.name}</span>
-        </div>
+    const bye = initialData[conf].bye;
+    container.innerHTML = `
+        <div class="matchup"><div class="team placeholder"><span class="name">Lowest Seed</span></div>
+        <div class="team" style="cursor: default; opacity: 0.8;"><span class="seed">${bye.seed}</span><img src="${bye.logo}" class="team-logo"><span class="name">${bye.name}</span></div></div>
+        <div class="matchup"><div class="team placeholder"><span class="name">Winner WC</span></div><div class="team placeholder"><span class="name">Winner WC</span></div></div>
     `;
-
-    const div2 = document.createElement('div');
-    div2.className = 'matchup';
-    div2.innerHTML = `
-        <div class="team placeholder"><span class="name">Winner WC</span></div>
-        <div class="team placeholder"><span class="name">Winner WC</span></div>
-    `;
-    container.appendChild(div1);
-    container.appendChild(div2);
 }
 
 function renderRoundPlaceholders(conf, round, count) {
     const container = document.getElementById(`${conf}-${round}`);
     container.innerHTML = '';
     for (let i = 0; i < count; i++) {
-        const div = document.createElement('div');
-        div.className = 'matchup';
-        div.innerHTML = `
-            <div class="team placeholder"><span class="name">TBD</span></div>
-            <div class="team placeholder"><span class="name">TBD</span></div>
-        `;
-        container.appendChild(div);
+        container.innerHTML += `<div class="matchup"><div class="team placeholder"><span class="name">TBD</span></div><div class="team placeholder"><span class="name">TBD</span></div></div>`;
     }
 }
 
-// --- SHARED HELPERS ---
-function createMatchupDiv(home, away, conf, round, matchId) {
-    const div = document.createElement('div');
-    div.className = 'matchup';
-    div.innerHTML = `
-        <div class="team" onclick="selectWinner('${conf}', '${round}', ${matchId}, '${away.name}', ${away.seed}, this)">
-            <span class="seed">${away.seed}</span>
-            <img src="${away.logo}" alt="${away.name}" class="team-logo">
-            <span class="name">${away.name}</span>
-        </div>
-        <div class="team" onclick="selectWinner('${conf}', '${round}', ${matchId}, '${home.name}', ${home.seed}, this)">
-            <span class="seed">${home.seed}</span>
-            <img src="${home.logo}" alt="${home.name}" class="team-logo">
-            <span class="name">${home.name}</span>
-        </div>
-    `;
-    return div;
-}
-
-// --- SELECTION LOGIC (UPDATED WITH CASCADING RESET) ---
+// --- SELECTION LOGIC ---
 function selectWinner(conf, round, matchId, teamName, seed, element) {
     const logoImg = element.querySelector('.team-logo');
     const logoPath = logoImg ? logoImg.getAttribute('src') : '';
 
-    // 1. Update the pick for the current round
     if (round === 'wc') {
         picks[conf].wcWinners[matchId] = { name: teamName, seed: seed, logo: logoPath };
-
-        // CASCADING RESET: If WC changes, Div matchups are invalid (re-seeding), so clear everything future
-        picks[conf].divWinners = [];
-        picks[conf].champion = null;
-        picks.superBowlWinner = null;
-        document.getElementById('champion-display').innerHTML = ''; // Clear Big Logo
+        picks[conf].divWinners = []; picks[conf].champion = null; picks.superBowlWinner = null;
+        document.getElementById('champion-display').innerHTML = '';
     }
     else if (round === 'div') {
         picks[conf].divWinners[matchId] = { name: teamName, seed: seed, logo: logoPath };
-
-        // CASCADING RESET: If Div changes, Champ is invalid
-        picks[conf].champion = null;
-        picks.superBowlWinner = null;
+        picks[conf].champion = null; picks.superBowlWinner = null;
         document.getElementById('champion-display').innerHTML = '';
     }
     else if (round === 'champ') {
         picks[conf].champion = { name: teamName, seed: seed, logo: logoPath };
-
-        // CASCADING RESET: If Champ changes, SB Winner is invalid
         picks.superBowlWinner = null;
         document.getElementById('champion-display').innerHTML = '';
     }
@@ -254,43 +195,30 @@ function selectWinner(conf, round, matchId, teamName, seed, element) {
         picks.superBowlWinner = teamName;
     }
 
-    // 2. Re-render the entire bracket (this will show the placeholders for the reset rounds)
     refreshAllRounds();
-
-    // 3. Highlight the selections that are still valid
     restoreUIFromPicks();
 }
 
 function restoreSelection(conf, round, matchId, teamName) {
     const container = document.getElementById(round === 'sb' ? 'super-bowl-matchup' : `${conf}-${round}`);
     if (!container) return;
-
-    const allTeamsInRound = container.getElementsByClassName('team');
-    for (let team of allTeamsInRound) {
-        const nameSpan = team.querySelector('.name');
-        if (nameSpan && nameSpan.innerText === teamName) {
+    const allTeams = container.getElementsByClassName('team');
+    for (let team of allTeams) {
+        if (team.querySelector('.name') && team.querySelector('.name').innerText === teamName) {
             team.classList.add('selected');
         }
     }
 }
 
-// --- RESET LOGIC ---
 function resetBracket() {
-    if (!confirm("Are you sure you want to clear your picks?")) return;
-
-    picks = {
-        afc: { wcWinners: [], divWinners: [], champion: null },
-        nfc: { wcWinners: [], divWinners: [], champion: null },
-        superBowlWinner: null
-    };
-
-    const champDisplay = document.getElementById('champion-display');
-    if (champDisplay) champDisplay.innerHTML = '';
-
+    if (!confirm("Clear picks?")) return;
+    picks = { afc: { wcWinners: [], divWinners: [], champion: null }, nfc: { wcWinners: [], divWinners: [], champion: null }, superBowlWinner: null };
+    document.getElementById('champion-display').innerHTML = '';
     refreshAllRounds();
 }
 
-// --- SAVE / LOAD ---
+// --- SAVE / LOAD / GRADING ---
+
 function submitBracket() {
     const user = document.getElementById('username').value;
     const email = document.getElementById('useremail').value;
@@ -328,6 +256,11 @@ function loadBracket() {
                 refreshAllRounds();
                 restoreUIFromPicks();
                 if (msg) msg.innerText = "Loaded!";
+
+                // TRIGGER GRADING IF MASTER KEY EXISTS
+                if (data.masterPicks) {
+                    gradeBracket(data.masterPicks);
+                }
             } else {
                 alert("Not found.");
                 if (msg) msg.innerText = "Not found.";
@@ -335,11 +268,91 @@ function loadBracket() {
         });
 }
 
-function restoreUIFromPicks() {
+function gradeBracket(master) {
+    // 1. Identify who has ACTUALLY lost (The "Kill List")
+    // We look at the Master Bracket. If Master says BUF won, then JAX is DEAD.
+    let deadTeams = new Set();
+
     ['afc', 'nfc'].forEach(conf => {
-        picks[conf].wcWinners.forEach((w, i) => { if (w) restoreSelection(conf, 'wc', i, w.name); });
-        picks[conf].divWinners.forEach((w, i) => { if (w) restoreSelection(conf, 'div', i, w.name); });
-        if (picks[conf].champion) restoreSelection(conf, 'champ', 0, picks[conf].champion.name);
+        // Check WC
+        master[conf].wcWinners.forEach((mWin, i) => {
+            if (mWin) {
+                // Find the match in initialData to see who the loser was
+                const match = initialData[conf].wildCardMatchups[i];
+                const loser = (match.home.name === mWin.name) ? match.away.name : match.home.name;
+                deadTeams.add(loser);
+            }
+        });
+        // Check Div (If master has results)
+        master[conf].divWinners.forEach(mWin => {
+            if (mWin) {
+                // This is harder to infer loser without reseeding logic, 
+                // but we can trust that anyone NOT the winner in that round is at risk.
+                // Simplified: Just add the loser of this specific match if we can map it, 
+                // OR simpler: If a user picked a team that is NOT in the Master's Next Round, they are dead.
+            }
+        });
     });
-    if (picks.superBowlWinner) restoreSelection('sb', 'sb', 0, picks.superBowlWinner);
+
+    // 2. Loop through User Picks and Grade
+    ['afc', 'nfc'].forEach(conf => {
+        // WC Grading
+        picks[conf].wcWinners.forEach((uPick, i) => {
+            if (!uPick) return;
+            const mPick = master[conf].wcWinners[i];
+            const uiElement = findTeamElement(conf, 'wc', i, uPick.name);
+
+            if (mPick) {
+                // Game is finished
+                if (uPick.name === mPick.name) uiElement.classList.add('correct');
+                else uiElement.classList.add('incorrect');
+            }
+        });
+
+        // Div Grading
+        picks[conf].divWinners.forEach((uPick, i) => {
+            if (!uPick) return;
+            const uiElement = findTeamElement(conf, 'div', i, uPick.name);
+            if (deadTeams.has(uPick.name)) {
+                uiElement.classList.add('eliminated'); // Grey out (Zombie)
+            } else {
+                // Check direct result if available
+                if (master[conf].divWinners[i] && master[conf].divWinners[i].name === uPick.name) {
+                    uiElement.classList.add('correct');
+                } else if (master[conf].divWinners[i]) {
+                    uiElement.classList.add('incorrect');
+                }
+            }
+        });
+
+        // Champ Grading
+        if (picks[conf].champion) {
+            const uPick = picks[conf].champion;
+            const uiElement = findTeamElement(conf, 'champ', 0, uPick.name);
+            if (deadTeams.has(uPick.name)) uiElement.classList.add('eliminated');
+            else if (master[conf].champion && master[conf].champion.name === uPick.name) uiElement.classList.add('correct');
+            else if (master[conf].champion) uiElement.classList.add('incorrect');
+        }
+    });
+
+    // SB Grading
+    if (picks.superBowlWinner) {
+        const uiElement = document.querySelector('#super-bowl-matchup .team.selected');
+        if (uiElement) {
+            if (deadTeams.has(picks.superBowlWinner)) uiElement.classList.add('eliminated');
+            else if (master.superBowlWinner && master.superBowlWinner === picks.superBowlWinner) uiElement.classList.add('correct');
+        }
+    }
+}
+
+function findTeamElement(conf, round, matchIndex, teamName) {
+    const container = document.getElementById(round === 'sb' ? 'super-bowl-matchup' : `${conf}-${round}`);
+    if (!container) return document.createElement('div'); // dummy
+    // Logic to find specific match div if multiple
+    // Simplified: search all teams in container
+    const allTeams = container.querySelectorAll('.team');
+    for (let t of allTeams) {
+        if (t.querySelector('.name').innerText === teamName) return t;
+    }
+    return document.createElement('div');
 }
