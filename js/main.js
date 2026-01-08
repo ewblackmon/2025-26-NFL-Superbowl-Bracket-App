@@ -2,6 +2,7 @@
 // 1. PASTE YOUR DEPLOYED GOOGLE SCRIPT URL BETWEEN THE QUOTES BELOW:
 const scriptURL = "https://script.google.com/macros/s/AKfycbyieXUOJqeOh3l4KkrUBYmQkptpsWf-ersSvhFe80sKoUws9fnzAreARW4CrNlpeuKW9Q/exec";
 
+
 // --- DATA ---
 const teamFullNames = {
     "DEN": "Denver Broncos", "PIT": "Pittsburgh Steelers", "HOU": "Houston Texans",
@@ -42,6 +43,11 @@ let picks = {
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
     refreshAllRounds();
+
+    const resetBtn = document.getElementById('reset-btn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', resetBracket);
+    }
 });
 
 function refreshAllRounds() {
@@ -214,25 +220,44 @@ function createMatchupDiv(home, away, conf, round, matchId) {
     return div;
 }
 
-// --- SELECTION LOGIC ---
+// --- SELECTION LOGIC (UPDATED WITH CASCADING RESET) ---
 function selectWinner(conf, round, matchId, teamName, seed, element) {
     const logoImg = element.querySelector('.team-logo');
     const logoPath = logoImg ? logoImg.getAttribute('src') : '';
 
+    // 1. Update the pick for the current round
     if (round === 'wc') {
         picks[conf].wcWinners[matchId] = { name: teamName, seed: seed, logo: logoPath };
+
+        // CASCADING RESET: If WC changes, Div matchups are invalid (re-seeding), so clear everything future
+        picks[conf].divWinners = [];
+        picks[conf].champion = null;
+        picks.superBowlWinner = null;
+        document.getElementById('champion-display').innerHTML = ''; // Clear Big Logo
     }
     else if (round === 'div') {
         picks[conf].divWinners[matchId] = { name: teamName, seed: seed, logo: logoPath };
+
+        // CASCADING RESET: If Div changes, Champ is invalid
+        picks[conf].champion = null;
+        picks.superBowlWinner = null;
+        document.getElementById('champion-display').innerHTML = '';
     }
     else if (round === 'champ') {
         picks[conf].champion = { name: teamName, seed: seed, logo: logoPath };
+
+        // CASCADING RESET: If Champ changes, SB Winner is invalid
+        picks.superBowlWinner = null;
+        document.getElementById('champion-display').innerHTML = '';
     }
     else if (round === 'sb') {
         picks.superBowlWinner = teamName;
     }
 
+    // 2. Re-render the entire bracket (this will show the placeholders for the reset rounds)
     refreshAllRounds();
+
+    // 3. Highlight the selections that are still valid
     restoreUIFromPicks();
 }
 
@@ -253,18 +278,15 @@ function restoreSelection(conf, round, matchId, teamName) {
 function resetBracket() {
     if (!confirm("Are you sure you want to clear your picks?")) return;
 
-    // Clear State
     picks = {
         afc: { wcWinners: [], divWinners: [], champion: null },
         nfc: { wcWinners: [], divWinners: [], champion: null },
         superBowlWinner: null
     };
 
-    // Clear Champion Display
     const champDisplay = document.getElementById('champion-display');
     if (champDisplay) champDisplay.innerHTML = '';
 
-    // Re-render
     refreshAllRounds();
 }
 
