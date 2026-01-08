@@ -4,9 +4,7 @@
     --text-highlight: #f5f5f5;
     --accent-gold: #FFD700;
     --nfc-color: #004C99;
-    /* Sharper Blue */
     --afc-color: #C83803;
-    /* Sharper Red */
     --border-color: #444;
 }
 
@@ -14,7 +12,6 @@ body {
     background-color: var(--bg-color);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
-    /* Allow horizontal scrolling on body if needed */
     overflow-x: auto;
     height: 100vh;
 }
@@ -24,7 +21,6 @@ body {
     flex-direction: column;
     height: 100%;
     min-width: 100%;
-    /* Ensure container fills scrollable area */
 }
 
 /* HEADER */
@@ -33,7 +29,6 @@ body {
     padding: 15px;
     background: #181818;
     border-bottom: 1px solid #333;
-    /* Sticky header ensures it stays visible while scrolling vertically */
     position: sticky;
     top: 0;
     z-index: 100;
@@ -70,22 +65,16 @@ body {
 /* MAIN LAYOUT */
 .bracket-wrapper {
     display: flex;
-    /* Start at the left so we can scroll right */
     justify-content: flex-start;
     align-items: stretch;
     flex-grow: 1;
     padding: 20px;
     gap: 10px;
-
-    /* Enable Horizontal Scrolling */
     overflow-x: auto;
     overflow-y: auto;
-
-    /* Smooth scrolling on iOS */
     -webkit-overflow-scrolling: touch;
 }
 
-/* On large screens (Desktops), center the bracket nicely */
 @media (min-width: 1250px) {
     .bracket-wrapper {
         justify-content: center;
@@ -95,10 +84,8 @@ body {
 .conference-container {
     display: flex;
     flex-direction: column;
-    /* Don't shrink! Stay wide so we can scroll */
     flex: 0 0 auto;
     width: 500px;
-    /* Fixed width to ensure readable layout */
 }
 
 .conf-header {
@@ -142,7 +129,6 @@ body {
     flex: 1;
 }
 
-/* Column Widths - Kept fixed to prevent squishing */
 .wc-col {
     flex: 0 0 160px;
 }
@@ -210,7 +196,6 @@ body {
     border-color: #444;
 }
 
-/* SEED STYLING */
 .seed {
     background: var(--accent-gold);
     color: #000;
@@ -224,26 +209,20 @@ body {
     flex-shrink: 0;
 }
 
-/* NEW: Super Bowl specific seed styles */
 .sb-seed {
     width: 40px;
-    /* Wider to fit 3 letters */
     font-size: 0.8rem;
     letter-spacing: 0.5px;
 }
 
 .nfc-seed {
     background-color: var(--nfc-color) !important;
-    /* Override default gold */
     color: #ffffff !important;
-    /* White text */
 }
 
 .afc-seed {
     background-color: var(--afc-color) !important;
-    /* Override default gold */
     color: #ffffff !important;
-    /* White text */
 }
 
 .team-logo {
@@ -272,14 +251,13 @@ body {
 
 /* SUPER BOWL CENTER */
 .super-bowl-center {
-    /* Prevent shrinking */
     flex: 0 0 160px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     margin: 0 10px;
-    padding-top: 40px;
+    padding-top: 20px;
 }
 
 .sb-logo {
@@ -289,6 +267,19 @@ body {
     line-height: 1.1;
     margin-bottom: 20px;
     font-weight: 900;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* UPDATED NFL SHIELD STYLE (Smaller) */
+.nfl-shield-logo {
+    width: 90px;
+    /* Reduced from 60px to 15px */
+    height: auto;
+    margin-bottom: 5px;
+    /* Reduced margin slightly */
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
 }
 
 .sb-roman {
@@ -330,7 +321,6 @@ body {
 .champ-big-logo {
     width: auto;
     max-width: 90%;
-    /* UPDATED HEIGHT: 2x bigger */
     height: 120px;
     filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
     animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -348,10 +338,9 @@ body {
     }
 }
 
-/* RESPONSIVE UPDATES */
+/* RESPONSIVE */
 @media (max-width: 1000px) {
 
-    /* Don't shrink widths on mobile, just allow scroll */
     .wc-col,
     .div-col,
     .champ-col,
@@ -378,4 +367,10 @@ body {
         flex-wrap: wrap;
         justify-content: center;
     }
+
+    .nfl-shield-logo {
+        width: 12px;
+    }
+
+    /* Even smaller on mobile */
 }
