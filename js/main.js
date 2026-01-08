@@ -251,15 +251,23 @@ function loadBracket() {
         .then(r => r.json())
         .then(data => {
             if (data.status === "found") {
+                // 1. Load Data
                 picks = data.picks;
                 document.getElementById('username').value = data.name;
+
+                // 2. Refresh UI
                 refreshAllRounds();
                 restoreUIFromPicks();
                 if (msg) msg.innerText = "Loaded!";
 
-                // TRIGGER GRADING IF MASTER KEY EXISTS
-                if (data.masterPicks) {
-                    gradeBracket(data.masterPicks);
+                // 3. Trigger Grading (SAFE MODE)
+                // We use try/catch to prevent a crash if Master Key is partial/missing
+                try {
+                    if (data.masterPicks) {
+                        gradeBracket(data.masterPicks);
+                    }
+                } catch (err) {
+                    console.log("Grading skipped (Master Key incomplete or empty)");
                 }
             } else {
                 alert("Not found.");
@@ -270,28 +278,19 @@ function loadBracket() {
 
 function gradeBracket(master) {
     // 1. Identify who has ACTUALLY lost (The "Kill List")
-    // We look at the Master Bracket. If Master says BUF won, then JAX is DEAD.
     let deadTeams = new Set();
 
     ['afc', 'nfc'].forEach(conf => {
-        // Check WC
-        master[conf].wcWinners.forEach((mWin, i) => {
-            if (mWin) {
-                // Find the match in initialData to see who the loser was
-                const match = initialData[conf].wildCardMatchups[i];
-                const loser = (match.home.name === mWin.name) ? match.away.name : match.home.name;
-                deadTeams.add(loser);
-            }
-        });
-        // Check Div (If master has results)
-        master[conf].divWinners.forEach(mWin => {
-            if (mWin) {
-                // This is harder to infer loser without reseeding logic, 
-                // but we can trust that anyone NOT the winner in that round is at risk.
-                // Simplified: Just add the loser of this specific match if we can map it, 
-                // OR simpler: If a user picked a team that is NOT in the Master's Next Round, they are dead.
-            }
-        });
+        // Safe access in case Master is partial
+        if (master[conf] && master[conf].wcWinners) {
+            master[conf].wcWinners.forEach((mWin, i) => {
+                if (mWin) {
+                    const match = initialData[conf].wildCardMatchups[i];
+                    const loser = (match.home.name === mWin.name) ? match.away.name : match.home.name;
+                    deadTeams.add(loser);
+                }
+            });
+        }
     });
 
     // 2. Loop through User Picks and Grade
@@ -299,11 +298,10 @@ function gradeBracket(master) {
         // WC Grading
         picks[conf].wcWinners.forEach((uPick, i) => {
             if (!uPick) return;
-            const mPick = master[conf].wcWinners[i];
             const uiElement = findTeamElement(conf, 'wc', i, uPick.name);
 
-            if (mPick) {
-                // Game is finished
+            if (master[conf] && master[conf].wcWinners && master[conf].wcWinners[i]) {
+                const mPick = master[conf].wcWinners[i];
                 if (uPick.name === mPick.name) uiElement.classList.add('correct');
                 else uiElement.classList.add('incorrect');
             }
@@ -313,9 +311,10 @@ function gradeBracket(master) {
         picks[conf].divWinners.forEach((uPick, i) => {
             if (!uPick) return;
             const uiElement = findTeamElement(conf, 'div', i, uPick.name);
+
             if (deadTeams.has(uPick.name)) {
-                uiElement.classList.add('eliminated'); // Grey out (Zombie)
-            } else {
+                uiElement.classList.add('eliminated');
+            } else if (master[conf] && master[conf].divWinners) {
                 // Check direct result if available
                 if (master[conf].divWinners[i] && master[conf].divWinners[i].name === uPick.name) {
                     uiElement.classList.add('correct');
@@ -330,8 +329,10 @@ function gradeBracket(master) {
             const uPick = picks[conf].champion;
             const uiElement = findTeamElement(conf, 'champ', 0, uPick.name);
             if (deadTeams.has(uPick.name)) uiElement.classList.add('eliminated');
-            else if (master[conf].champion && master[conf].champion.name === uPick.name) uiElement.classList.add('correct');
-            else if (master[conf].champion) uiElement.classList.add('incorrect');
+            else if (master[conf] && master[conf].champion) {
+                if (master[conf].champion.name === uPick.name) uiElement.classList.add('correct');
+                else uiElement.classList.add('incorrect');
+            }
         }
     });
 
@@ -340,16 +341,17 @@ function gradeBracket(master) {
         const uiElement = document.querySelector('#super-bowl-matchup .team.selected');
         if (uiElement) {
             if (deadTeams.has(picks.superBowlWinner)) uiElement.classList.add('eliminated');
-            else if (master.superBowlWinner && master.superBowlWinner === picks.superBowlWinner) uiElement.classList.add('correct');
+            else if (master.superBowlWinner) {
+                if (master.superBowlWinner === picks.superBowlWinner) uiElement.classList.add('correct');
+                else uiElement.classList.add('incorrect'); // Only mark red if Master has a winner
+            }
         }
     }
 }
 
 function findTeamElement(conf, round, matchIndex, teamName) {
     const container = document.getElementById(round === 'sb' ? 'super-bowl-matchup' : `${conf}-${round}`);
-    if (!container) return document.createElement('div'); // dummy
-    // Logic to find specific match div if multiple
-    // Simplified: search all teams in container
+    if (!container) return document.createElement('div');
     const allTeams = container.querySelectorAll('.team');
     for (let t of allTeams) {
         if (t.querySelector('.name').innerText === teamName) return t;

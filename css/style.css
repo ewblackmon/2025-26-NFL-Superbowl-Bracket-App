@@ -427,37 +427,42 @@ body {
 
 /* --- GRADING STYLES --- */
 
-/* CORRECT (Green Glow) */
-.team.correct {
-    border-color: #00ff00 !important;
-    background: linear-gradient(to right, #2a2a2a, #1a3a1a);
-    box-shadow: 0 0 8px rgba(0, 255, 0, 0.4);
+/* 1. CORRECT (White Background + Green Border + Checkmark) */
+.team.selected.correct {
+    background-color: #ffffff !important;
+    /* Keep it white! */
+    border: 3px solid #00aa00 !important;
+    /* Thick Green Border */
+    color: #000 !important;
+    position: relative;
 }
 
-.team.correct::after {
+.team.selected.correct::after {
     content: "✔";
-    color: #00ff00;
-    font-weight: bold;
-    margin-left: auto;
-    padding-right: 8px;
+    color: #00aa00;
+    font-weight: 900;
+    position: absolute;
+    right: 10px;
+    font-size: 1.2rem;
 }
 
-/* INCORRECT (Red Border + Strikethrough) */
-.team.incorrect {
-    border-color: #ff3333 !important;
-    opacity: 0.8;
-}
-
-.team.incorrect .name {
+/* 2. INCORRECT (White Background + Red Border + Strikethrough) */
+.team.selected.incorrect {
+    background-color: #ffffff !important;
+    border: 3px solid #ff0000 !important;
+    /* Thick Red Border */
+    color: #cc0000 !important;
     text-decoration: line-through;
-    color: #ff8888;
+    opacity: 0.9;
 }
 
-/* ELIMINATED / ZOMBIE (Faded Out) */
+/* 3. ELIMINATED / ZOMBIE (Greyed Out - Overrides White) */
 .team.eliminated {
-    opacity: 0.3;
-    filter: grayscale(100%);
-    border-color: #555;
+    background-color: #333 !important;
+    /* Dark Grey */
+    border-color: #555 !important;
+    color: #777 !important;
+    text-decoration: line-through;
+    opacity: 0.5;
     pointer-events: none;
-    /* Can't click them anymore */
 }
