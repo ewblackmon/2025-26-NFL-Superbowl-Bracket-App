@@ -12,7 +12,8 @@ body {
     background-color: var(--bg-color);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
-    overflow-x: hidden;
+    /* CHANGED: Allow horizontal scrolling on body if needed */
+    overflow-x: auto;
     height: 100vh;
 }
 
@@ -20,6 +21,8 @@ body {
     display: flex;
     flex-direction: column;
     height: 100%;
+    min-width: 100%;
+    /* Ensure container fills scrollable area */
 }
 
 /* HEADER */
@@ -28,6 +31,11 @@ body {
     padding: 15px;
     background: #181818;
     border-bottom: 1px solid #333;
+    /* Sticky header ensures it stays visible while scrolling vertically */
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
 }
 
 .header h1 {
@@ -60,19 +68,35 @@ body {
 /* MAIN LAYOUT */
 .bracket-wrapper {
     display: flex;
-    justify-content: center;
+    /* CHANGED: Start at the left so we can scroll right */
+    justify-content: flex-start;
     align-items: stretch;
     flex-grow: 1;
     padding: 20px;
     gap: 10px;
+
+    /* CHANGED: Enable Horizontal Scrolling */
+    overflow-x: auto;
     overflow-y: auto;
+
+    /* Smooth scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
+}
+
+/* On large screens (Desktops), center the bracket nicely */
+@media (min-width: 1250px) {
+    .bracket-wrapper {
+        justify-content: center;
+    }
 }
 
 .conference-container {
     display: flex;
     flex-direction: column;
-    flex: 1;
-    max-width: 600px;
+    /* Don't shrink! Stay wide so we can scroll */
+    flex: 0 0 auto;
+    width: 500px;
+    /* Fixed width to ensure readable layout */
 }
 
 .conf-header {
@@ -116,7 +140,7 @@ body {
     flex: 1;
 }
 
-/* All Columns 160px wide */
+/* Column Widths - Kept fixed to prevent squishing */
 .wc-col {
     flex: 0 0 160px;
 }
@@ -159,7 +183,6 @@ body {
     border-color: #666;
 }
 
-/* SELECTED STATE */
 .team.selected {
     background-color: #ffffff !important;
     border-color: #ffffff;
@@ -173,7 +196,6 @@ body {
     font-weight: 800;
 }
 
-/* Placeholders */
 .team.placeholder {
     background: transparent;
     border: 1px dashed #444;
@@ -186,7 +208,6 @@ body {
     border-color: #444;
 }
 
-/* Seed, Logo, Name */
 .seed {
     background: var(--accent-gold);
     color: #000;
@@ -226,6 +247,7 @@ body {
 
 /* SUPER BOWL CENTER */
 .super-bowl-center {
+    /* Prevent shrinking */
     flex: 0 0 160px;
     display: flex;
     flex-direction: column;
@@ -250,7 +272,6 @@ body {
     margin-top: 5px;
 }
 
-/* CHAMPION DISPLAY */
 #champion-display {
     margin-top: 30px;
     text-align: center;
@@ -277,24 +298,13 @@ body {
     line-height: 1.2;
     white-space: normal;
     word-wrap: break-word;
-    /* This ensures text doesn't blow out the column */
     max-width: 100%;
 }
 
-/* REFINED LOGO SIZE */
 .champ-big-logo {
-    /* 1. Reset Width: Don't force it to 100% */
     width: auto;
-
-    /* 2. Constrain Max Width: Keep it inside the column padding */
     max-width: 90%;
-
-    /* 3. Constrain Height: This is the key. 
-          A fixed height (like 60px) ensures it looks proportional 
-          to the text lines above it. */
     height: 60px;
-
-    /* 4. Shadow & Animation */
     filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
     animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -311,35 +321,35 @@ body {
     }
 }
 
-/* RESPONSIVE */
+/* RESPONSIVE UPDATES */
 @media (max-width: 1000px) {
 
+    /* Don't shrink widths on mobile, just allow scroll */
     .wc-col,
     .div-col,
     .champ-col,
     .super-bowl-center {
-        flex: 0 0 110px;
+        flex: 0 0 160px;
     }
 
     .team {
-        font-size: 0.8rem;
-        height: 32px;
+        font-size: 0.9rem;
+        height: 36px;
     }
 
     .conf-header {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
     }
 
     .team-logo {
-        height: 20px;
-        margin: 0 5px;
+        height: 24px;
+        margin: 0 8px;
     }
 
-    .champ-name {
-        font-size: 0.9rem;
-    }
-
-    .champ-big-logo {
-        height: 45px;
+    /* Ensure the header text doesn't wrap awkwardly */
+    .user-controls {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
     }
 }
