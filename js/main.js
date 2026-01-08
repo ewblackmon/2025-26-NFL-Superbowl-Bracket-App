@@ -107,7 +107,6 @@ function renderSuperBowl() {
     if (picks.afc.champion && picks.nfc.champion) {
         const div = document.createElement('div');
         div.className = 'matchup';
-        // UPDATED HTML: Uses NFC/AFC text and new classes
         div.innerHTML = `
             <div class="team" onclick="selectWinner('sb', 'sb', 0, '${picks.nfc.champion.name}', 0, this)">
                 <span class="seed sb-seed nfc-seed">NFC</span>
@@ -254,13 +253,18 @@ function restoreSelection(conf, round, matchId, teamName) {
 function resetBracket() {
     if (!confirm("Are you sure you want to clear your picks?")) return;
 
+    // Clear State
     picks = {
         afc: { wcWinners: [], divWinners: [], champion: null },
         nfc: { wcWinners: [], divWinners: [], champion: null },
         superBowlWinner: null
     };
 
-    document.getElementById('champion-display').innerHTML = '';
+    // Clear Champion Display
+    const champDisplay = document.getElementById('champion-display');
+    if (champDisplay) champDisplay.innerHTML = '';
+
+    // Re-render
     refreshAllRounds();
 }
 
