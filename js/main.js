@@ -147,7 +147,7 @@ function displayChampion(teamAbbr) {
 function createMatchupDiv(home, away, conf, round, matchId) {
     const div = document.createElement('div');
     div.className = 'matchup';
-    // NOTE: Added data-name attributes for reliable selection logic
+    // Using data-name for reliable selection logic
     div.innerHTML = `
         <div class="team" data-name="${away.name}" onclick="selectWinner('${conf}', '${round}', ${matchId}, '${away.name}', ${away.seed}, this)">
             <span class="seed">${away.seed}</span><img src="${away.logo}" class="team-logo"><span class="name">${away.name}</span>
@@ -212,59 +212,59 @@ function selectWinner(conf, round, matchId, teamName, seed, element) {
     }
 
     refreshAllRounds();
-    restoreUIFromPicks();
+    restoreUIFromPicks(); // This function was missing! Now it's back.
 }
 
 function restoreSelection(conf, round, matchId, teamName) {
     const container = document.getElementById(round === 'sb' ? 'super-bowl-matchup' : `${conf}-${round}`);
     if (!container) return;
 
-    // 1. Try finding by data tag (The Clean Way)
+    // Bulletproof selection using data attributes with Hybrid Fallback
     let teamDiv = container.querySelector(`.team[data-name="${teamName}"]`);
 
-    // 2. Fallback: Find by Text Content (The "Backup" Way)
-    // If the data tag is missing for any reason, this loop finds the team by reading its name.
     if (!teamDiv) {
+        // Fallback: Find by Text Content
         const allTeams = container.querySelectorAll('.team');
         for (let t of allTeams) {
-            // We use 'includes' to match "BUF" inside "BUF Buffalo Bills" if needed
             if (t.innerText.includes(teamName)) {
                 teamDiv = t;
-                console.log(`Fallback used for ${teamName}`); // This will tell us if fallback is needed
                 break;
             }
         }
     }
 
-    // 3. Apply Style (The "Nuclear Option")
     if (teamDiv) {
-        // Add the class for standard CSS handling
         teamDiv.classList.add('selected');
-
-        // MANUALLY Force the colors (Bypasses any CSS conflicts)
+        // Force override styles
         teamDiv.style.setProperty('background-color', '#ffffff', 'important');
         teamDiv.style.setProperty('border-color', '#ffffff', 'important');
         teamDiv.style.setProperty('opacity', '1', 'important');
 
-        // Force the text to be black so it's readable on white
         const nameSpan = teamDiv.querySelector('.name');
         if (nameSpan) {
             nameSpan.style.setProperty('color', '#000000', 'important');
             nameSpan.style.setProperty('font-weight', '800', 'important');
         }
-    } else {
-        console.error(`Could not find element for team: ${teamName} in ${round}`);
     }
 }
 
+// --- THE MISSING FUNCTION (RESTORED) ---
+function restoreUIFromPicks() {
+    ['afc', 'nfc'].forEach(conf => {
+        picks[conf].wcWinners.forEach((w, i) => { if (w) restoreSelection(conf, 'wc', i, w.name); });
+        picks[conf].divWinners.forEach((w, i) => { if (w) restoreSelection(conf, 'div', i, w.name); });
+        if (picks[conf].champion) restoreSelection(conf, 'champ', 0, picks[conf].champion.name);
+    });
+    if (picks.superBowlWinner) restoreSelection('sb', 'sb', 0, picks.superBowlWinner);
+}
+
+// --- SAVE / LOAD / GRADING ---
 function resetBracket() {
     if (!confirm("Clear picks?")) return;
     picks = { afc: { wcWinners: [], divWinners: [], champion: null }, nfc: { wcWinners: [], divWinners: [], champion: null }, superBowlWinner: null };
     document.getElementById('champion-display').innerHTML = '';
     refreshAllRounds();
 }
-
-// --- SAVE / LOAD / GRADING ---
 
 function submitBracket() {
     const user = document.getElementById('username').value;
@@ -298,23 +298,16 @@ function loadBracket() {
         .then(r => r.json())
         .then(data => {
             if (data.status === "found") {
-                // 1. Load Data
                 picks = data.picks;
                 document.getElementById('username').value = data.name;
-
-                // 2. Refresh UI
                 refreshAllRounds();
                 restoreUIFromPicks();
                 if (msg) msg.innerText = "Loaded!";
 
-                // 3. Trigger Grading (SAFE MODE)
+                // Trigger Grading (Safe Mode)
                 try {
-                    if (data.masterPicks) {
-                        gradeBracket(data.masterPicks);
-                    }
-                } catch (err) {
-                    console.log("Grading skipped (Master Key incomplete or empty)");
-                }
+                    if (data.masterPicks) gradeBracket(data.masterPicks);
+                } catch (err) { console.log("Grading skipped"); }
             } else {
                 alert("Not found.");
                 if (msg) msg.innerText = "Not found.";
@@ -323,7 +316,6 @@ function loadBracket() {
 }
 
 function gradeBracket(master) {
-    // 1. Identify who has ACTUALLY lost (The "Kill List")
     let deadTeams = new Set();
 
     ['afc', 'nfc'].forEach(conf => {
@@ -338,13 +330,10 @@ function gradeBracket(master) {
         }
     });
 
-    // 2. Loop through User Picks and Grade
     ['afc', 'nfc'].forEach(conf => {
-        // WC Grading
         picks[conf].wcWinners.forEach((uPick, i) => {
             if (!uPick) return;
             const uiElement = findTeamElement(conf, 'wc', i, uPick.name);
-
             if (master[conf] && master[conf].wcWinners && master[conf].wcWinners[i]) {
                 const mPick = master[conf].wcWinners[i];
                 if (uPick.name === mPick.name) uiElement.classList.add('correct');
@@ -352,23 +341,16 @@ function gradeBracket(master) {
             }
         });
 
-        // Div Grading
         picks[conf].divWinners.forEach((uPick, i) => {
             if (!uPick) return;
             const uiElement = findTeamElement(conf, 'div', i, uPick.name);
-
-            if (deadTeams.has(uPick.name)) {
-                uiElement.classList.add('eliminated');
-            } else if (master[conf] && master[conf].divWinners) {
-                if (master[conf].divWinners[i] && master[conf].divWinners[i].name === uPick.name) {
-                    uiElement.classList.add('correct');
-                } else if (master[conf].divWinners[i]) {
-                    uiElement.classList.add('incorrect');
-                }
+            if (deadTeams.has(uPick.name)) uiElement.classList.add('eliminated');
+            else if (master[conf] && master[conf].divWinners) {
+                if (master[conf].divWinners[i] && master[conf].divWinners[i].name === uPick.name) uiElement.classList.add('correct');
+                else if (master[conf].divWinners[i]) uiElement.classList.add('incorrect');
             }
         });
 
-        // Champ Grading
         if (picks[conf].champion) {
             const uPick = picks[conf].champion;
             const uiElement = findTeamElement(conf, 'champ', 0, uPick.name);
@@ -380,7 +362,6 @@ function gradeBracket(master) {
         }
     });
 
-    // SB Grading
     if (picks.superBowlWinner) {
         const uiElement = document.querySelector('#super-bowl-matchup .team.selected');
         if (uiElement) {
