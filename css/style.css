@@ -12,8 +12,9 @@ body {
     background-color: var(--bg-color);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
-    overflow-x: auto;
-    height: 100vh;
+    overflow-x: hidden;
+    /* Prevent horizontal scroll on mobile */
+    min-height: 100vh;
 }
 
 .app-container {
@@ -44,33 +45,58 @@ body {
     font-size: 1.5rem;
 }
 
+/* SCORE DISPLAY IN HEADER */
+#user-score-display {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+    color: #fff;
+    font-weight: bold;
+}
+
+#score-value {
+    color: #00ff00;
+    font-size: 1.3rem;
+    margin-left: 5px;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+/* CONTROLS (Mobile Fixes) */
 .user-controls {
     display: flex;
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
     gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .input-group,
 .btn-group {
     display: flex;
     gap: 5px;
+    justify-content: center;
 }
 
+/* FIX FOR SAMSUNG S24 / MOBILE WIDTH */
 .user-controls input {
     background: #333;
     border: 1px solid #555;
     color: white;
-    padding: 8px 10px;
+    padding: 10px;
     border-radius: 4px;
-    font-size: 0.9rem;
+    font-size: 1rem;
+    max-width: 40vw;
+    /* Prevent inputs from pushing off screen */
+    box-sizing: border-box;
+    /* Include padding in width calculation */
 }
 
 .user-controls button {
     background: var(--accent-gold);
     border: none;
-    padding: 8px 15px;
+    padding: 10px 15px;
     font-weight: bold;
     cursor: pointer;
     border-radius: 4px;
@@ -171,7 +197,6 @@ body {
     justify-content: center;
 }
 
-/* --- TEAM CARDS (Base Styles) --- */
 .matchup {
     margin: 8px 0;
     display: flex;
@@ -193,7 +218,6 @@ body {
     font-weight: 500;
     color: var(--text-highlight);
     position: relative;
-    /* Needed for the checkmark/X positioning */
 }
 
 .team:hover {
@@ -208,12 +232,6 @@ body {
     cursor: default;
 }
 
-.team.placeholder:hover {
-    background: transparent;
-    border-color: #444;
-}
-
-/* --- SEEDS & LOGOS --- */
 .seed {
     background: var(--accent-gold);
     color: #000;
@@ -247,7 +265,6 @@ body {
     height: 24px;
     width: auto;
     margin: 0 8px;
-    transition: all 0.3s ease;
 }
 
 .name {
@@ -268,14 +285,6 @@ body {
     padding-left: 10px;
 }
 
-.right-side .team.selected.correct::after,
-.right-side .team.selected.incorrect::after {
-    right: auto;
-    left: 10px;
-    /* Flip check/X icon for right side */
-}
-
-/* --- SUPER BOWL CENTER --- */
 .super-bowl-center {
     flex: 0 0 160px;
     display: flex;
@@ -335,9 +344,6 @@ body {
     text-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
     margin-bottom: 10px;
     line-height: 1.2;
-    white-space: normal;
-    word-wrap: break-word;
-    max-width: 100%;
 }
 
 .champ-big-logo {
@@ -345,7 +351,7 @@ body {
     max-width: 90%;
     height: 120px;
     filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
-    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: popIn 0.5s;
 }
 
 @keyframes popIn {
@@ -364,10 +370,9 @@ body {
 @media (max-width: 768px) {
     .user-controls {
         flex-direction: column;
-        align-items: stretch;
         width: 100%;
-        max-width: 300px;
-        margin: 0 auto;
+        max-width: 100%;
+        padding: 0 10px;
     }
 
     .input-group,
@@ -376,7 +381,12 @@ body {
         justify-content: center;
     }
 
-    .user-controls input,
+    .user-controls input {
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 5px;
+    }
+
     .user-controls button {
         flex: 1;
     }
@@ -406,9 +416,8 @@ body {
     }
 }
 
-/* ================= GRADING STYLES ================= */
+/* ================= GRADING & POINTS STYLES ================= */
 
-/* --- Base Selected State (Must be white background) --- */
 .team.selected {
     background-color: #ffffff !important;
     border-color: #ffffff !important;
@@ -423,35 +432,21 @@ body {
     font-weight: 800;
 }
 
-/* --- 1. CORRECT (Green Border + Checkmark) --- */
+/* 1. CORRECT (Green Border) */
 .team.selected.correct {
     border: 3px solid #00aa00 !important;
-    /* Thick Green Border */
 }
 
-/* The Green Checkmark Icon */
-.team.selected.correct::after {
-    content: "✔";
-    color: #00aa00;
-    font-weight: 900;
-    position: absolute;
-    right: 10px;
-    font-size: 1.2rem;
-}
-
-/* --- 2. INCORRECT (Red Border + Strikethrough + Red X) --- */
+/* 2. INCORRECT (Red Border + Strikethrough + Red X) */
 .team.selected.incorrect {
     border: 3px solid #ff0000 !important;
-    /* Thick Red Border */
 }
 
 .team.selected.incorrect .name {
     text-decoration: line-through;
     color: #cc0000 !important;
-    /* Dark red text */
 }
 
-/* The Red X Icon (NEW!) */
 .team.selected.incorrect::after {
     content: "✘";
     color: #ff0000;
@@ -461,26 +456,69 @@ body {
     font-size: 1.1rem;
 }
 
-/* --- 3. ELIMINATED / ZOMBIE (Heavily Faded Out) --- */
-/* This applies to future picks of teams that already lost */
+/* 3. POINTS DISPLAY (Dynamic based on round) */
+/* WC = +2 */
+.team.selected.correct.wc::after {
+    content: "✔ +2";
+    color: #00aa00;
+    font-weight: 900;
+    position: absolute;
+    right: 5px;
+    font-size: 0.9rem;
+}
+
+/* DIV = +3 */
+.team.selected.correct.div::after {
+    content: "✔ +3";
+    color: #00aa00;
+    font-weight: 900;
+    position: absolute;
+    right: 5px;
+    font-size: 0.9rem;
+}
+
+/* CONF = +5 */
+.team.selected.correct.champ::after {
+    content: "✔ +5";
+    color: #00aa00;
+    font-weight: 900;
+    position: absolute;
+    right: 5px;
+    font-size: 0.9rem;
+}
+
+/* SB = +10 */
+.team.selected.correct.sb::after {
+    content: "✔ +10";
+    color: #00aa00;
+    font-weight: 900;
+    position: absolute;
+    right: 5px;
+    font-size: 0.9rem;
+}
+
+/* Right side adjustment for points */
+.right-side .team.selected.correct.wc::after,
+.right-side .team.selected.correct.div::after,
+.right-side .team.selected.correct.champ::after,
+.right-side .team.selected.incorrect::after {
+    right: auto;
+    left: 10px;
+}
+
+/* 4. ELIMINATED (Faded) */
 .team.eliminated {
     background-color: #1a1a1a !important;
-    /* Very dark background */
     border-color: #333 !important;
     color: #555 !important;
-    /* Very dim text */
     text-decoration: line-through;
     opacity: 0.4 !important;
-    /* Transparent */
     filter: grayscale(100%);
-    /* No color */
     pointer-events: none;
-    /* Cannot be clicked */
     box-shadow: none !important;
     transform: none !important;
 }
 
-/* Ensure the logo and name are faded too */
 .team.eliminated .team-logo,
 .team.eliminated .name {
     opacity: 0.5;
