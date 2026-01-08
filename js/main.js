@@ -99,23 +99,29 @@ function renderSuperBowl() {
         const div = document.createElement('div');
         div.className = 'matchup';
         div.innerHTML = `
-            <div class="team" onclick="selectWinner('sb', 'sb', 0, '${picks.nfc.champion.name}', 0, this)">
+            <div class="team" data-name="${picks.nfc.champion.name}" onclick="selectWinner('sb', 'sb', 0, '${picks.nfc.champion.name}', 0, this)">
                 <span class="seed sb-seed nfc-seed">NFC</span>
                 <img src="${picks.nfc.champion.logo}" alt="${picks.nfc.champion.name}" class="team-logo">
                 <span class="name">${picks.nfc.champion.name}</span>
             </div>
-            <div class="team" onclick="selectWinner('sb', 'sb', 0, '${picks.afc.champion.name}', 0, this)">
+            <div class="team" data-name="${picks.afc.champion.name}" onclick="selectWinner('sb', 'sb', 0, '${picks.afc.champion.name}', 0, this)">
                 <span class="seed sb-seed afc-seed">AFC</span>
                 <img src="${picks.afc.champion.logo}" alt="${picks.afc.champion.name}" class="team-logo">
                 <span class="name">${picks.afc.champion.name}</span>
             </div>
         `;
         container.appendChild(div);
-        if (picks.superBowlWinner) displayChampion(picks.superBowlWinner);
+
+        if (picks.superBowlWinner) {
+            displayChampion(picks.superBowlWinner);
+        }
     } else {
         const div = document.createElement('div');
         div.className = 'matchup';
-        div.innerHTML = `<div class="team placeholder"><span class="name">NFC Champ</span></div><div class="team placeholder"><span class="name">AFC Champ</span></div>`;
+        div.innerHTML = `
+            <div class="team placeholder"><span class="name">NFC Champ</span></div>
+            <div class="team placeholder"><span class="name">AFC Champ</span></div>
+        `;
         container.appendChild(div);
     }
 }
@@ -141,6 +147,7 @@ function displayChampion(teamAbbr) {
 function createMatchupDiv(home, away, conf, round, matchId) {
     const div = document.createElement('div');
     div.className = 'matchup';
+    // NOTE: Added data-name attributes for reliable selection logic
     div.innerHTML = `
         <div class="team" data-name="${away.name}" onclick="selectWinner('${conf}', '${round}', ${matchId}, '${away.name}', ${away.seed}, this)">
             <span class="seed">${away.seed}</span><img src="${away.logo}" class="team-logo"><span class="name">${away.name}</span>
@@ -169,6 +176,15 @@ function renderRoundPlaceholders(conf, round, count) {
     for (let i = 0; i < count; i++) {
         container.innerHTML += `<div class="matchup"><div class="team placeholder"><span class="name">TBD</span></div><div class="team placeholder"><span class="name">TBD</span></div></div>`;
     }
+}
+
+function findTeamElement(conf, round, matchIndex, teamName) {
+    const container = document.getElementById(round === 'sb' ? 'super-bowl-matchup' : `${conf}-${round}`);
+    if (!container) return document.createElement('div'); // dummy
+
+    // Find precise match via data tag
+    const element = container.querySelector(`.team[data-name="${teamName}"]`);
+    return element || document.createElement('div');
 }
 
 // --- SELECTION LOGIC ---
@@ -202,11 +218,11 @@ function selectWinner(conf, round, matchId, teamName, seed, element) {
 function restoreSelection(conf, round, matchId, teamName) {
     const container = document.getElementById(round === 'sb' ? 'super-bowl-matchup' : `${conf}-${round}`);
     if (!container) return;
-    const allTeams = container.getElementsByClassName('team');
-    for (let team of allTeams) {
-        if (team.querySelector('.name') && team.querySelector('.name').innerText === teamName) {
-            team.classList.add('selected');
-        }
+
+    // Bulletproof selection using data attributes
+    const teamDiv = container.querySelector(`.team[data-name="${teamName}"]`);
+    if (teamDiv) {
+        teamDiv.classList.add('selected');
     }
 }
 
@@ -261,7 +277,6 @@ function loadBracket() {
                 if (msg) msg.innerText = "Loaded!";
 
                 // 3. Trigger Grading (SAFE MODE)
-                // We use try/catch to prevent a crash if Master Key is partial/missing
                 try {
                     if (data.masterPicks) {
                         gradeBracket(data.masterPicks);
@@ -281,7 +296,6 @@ function gradeBracket(master) {
     let deadTeams = new Set();
 
     ['afc', 'nfc'].forEach(conf => {
-        // Safe access in case Master is partial
         if (master[conf] && master[conf].wcWinners) {
             master[conf].wcWinners.forEach((mWin, i) => {
                 if (mWin) {
@@ -315,7 +329,6 @@ function gradeBracket(master) {
             if (deadTeams.has(uPick.name)) {
                 uiElement.classList.add('eliminated');
             } else if (master[conf] && master[conf].divWinners) {
-                // Check direct result if available
                 if (master[conf].divWinners[i] && master[conf].divWinners[i].name === uPick.name) {
                     uiElement.classList.add('correct');
                 } else if (master[conf].divWinners[i]) {
@@ -343,18 +356,8 @@ function gradeBracket(master) {
             if (deadTeams.has(picks.superBowlWinner)) uiElement.classList.add('eliminated');
             else if (master.superBowlWinner) {
                 if (master.superBowlWinner === picks.superBowlWinner) uiElement.classList.add('correct');
-                else uiElement.classList.add('incorrect'); // Only mark red if Master has a winner
+                else uiElement.classList.add('incorrect');
             }
         }
     }
-}
-
-function findTeamElement(conf, round, matchIndex, teamName) {
-    const container = document.getElementById(round === 'sb' ? 'super-bowl-matchup' : `${conf}-${round}`);
-    if (!container) return document.createElement('div');
-    const allTeams = container.querySelectorAll('.team');
-    for (let t of allTeams) {
-        if (t.querySelector('.name').innerText === teamName) return t;
-    }
-    return document.createElement('div');
 }
