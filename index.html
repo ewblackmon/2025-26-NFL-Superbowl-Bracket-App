@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Playoff Predictor '26</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+        <div class="header">
+            <h1>PLAYOFF PREDICTOR '26</h1>
+            <div class="user-controls">
+                <input type="text" id="username" placeholder="Name">
+                <input type="email" id="useremail" placeholder="Email">
+                <button onclick="submitBracket()">SAVE</button>
+                <button onclick="loadBracket()" class="btn-load">LOAD</button>
+                <button onclick="resetBracket()" style="background-color: #ff4444; color: white;">RESET</button>
+            </div>
+            <div id="status-message"></div>
+        </div>
+
+        <div class="bracket-wrapper">
+
+            <div class="conference-container">
+                <h2 class="conf-header nfc-color">NFC</h2>
+                <div class="rounds-row left-side">
+                    <div class="round-column wc-col" id="nfc-wc"></div>
+                    <div class="round-column div-col" id="nfc-div"></div>
+                    <div class="round-column champ-col" id="nfc-champ"></div>
+                </div>
+            </div>
+
+            <div class="super-bowl-center">
+                <div class="sb-logo">
+                    <span>SUPER<br>BOWL</span>
+                    <span class="sb-roman">LX</span>
+                </div>
+                <div id="super-bowl-matchup"></div>
+                <div id="champion-display"></div>
+            </div>
+
+            <div class="conference-container">
+                <h2 class="conf-header afc-color">AFC</h2>
+                <div class="rounds-row right-side">
+                    <div class="round-column wc-col" id="afc-wc"></div>
+                    <div class="round-column div-col" id="afc-div"></div>
+                    <div class="round-column champ-col" id="afc-champ"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>
