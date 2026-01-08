@@ -219,10 +219,41 @@ function restoreSelection(conf, round, matchId, teamName) {
     const container = document.getElementById(round === 'sb' ? 'super-bowl-matchup' : `${conf}-${round}`);
     if (!container) return;
 
-    // Bulletproof selection using data attributes
-    const teamDiv = container.querySelector(`.team[data-name="${teamName}"]`);
+    // 1. Try finding by data tag (The Clean Way)
+    let teamDiv = container.querySelector(`.team[data-name="${teamName}"]`);
+
+    // 2. Fallback: Find by Text Content (The "Backup" Way)
+    // If the data tag is missing for any reason, this loop finds the team by reading its name.
+    if (!teamDiv) {
+        const allTeams = container.querySelectorAll('.team');
+        for (let t of allTeams) {
+            // We use 'includes' to match "BUF" inside "BUF Buffalo Bills" if needed
+            if (t.innerText.includes(teamName)) {
+                teamDiv = t;
+                console.log(`Fallback used for ${teamName}`); // This will tell us if fallback is needed
+                break;
+            }
+        }
+    }
+
+    // 3. Apply Style (The "Nuclear Option")
     if (teamDiv) {
+        // Add the class for standard CSS handling
         teamDiv.classList.add('selected');
+
+        // MANUALLY Force the colors (Bypasses any CSS conflicts)
+        teamDiv.style.setProperty('background-color', '#ffffff', 'important');
+        teamDiv.style.setProperty('border-color', '#ffffff', 'important');
+        teamDiv.style.setProperty('opacity', '1', 'important');
+
+        // Force the text to be black so it's readable on white
+        const nameSpan = teamDiv.querySelector('.name');
+        if (nameSpan) {
+            nameSpan.style.setProperty('color', '#000000', 'important');
+            nameSpan.style.setProperty('font-weight', '800', 'important');
+        }
+    } else {
+        console.error(`Could not find element for team: ${teamName} in ${round}`);
     }
 }
 
