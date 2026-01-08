@@ -192,28 +192,13 @@ body {
     font-size: 0.9rem;
     font-weight: 500;
     color: var(--text-highlight);
+    position: relative;
+    /* Needed for the checkmark/X positioning */
 }
 
 .team:hover {
     background: #383838;
     border-color: #666;
-}
-
-/* --- SELECTION STATE (THE MISSING PIECE) --- */
-/* This MUST be here to force the white background on any selected team */
-.team.selected {
-    background-color: #ffffff !important;
-    border-color: #ffffff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-    transform: scale(1.02);
-    z-index: 10;
-    /* High z-index to pop out */
-}
-
-/* Ensure text turns black when background is white */
-.team.selected .name {
-    color: #000000 !important;
-    font-weight: 800;
 }
 
 .team.placeholder {
@@ -262,6 +247,7 @@ body {
     height: 24px;
     width: auto;
     margin: 0 8px;
+    transition: all 0.3s ease;
 }
 
 .name {
@@ -280,6 +266,13 @@ body {
 .right-side .name {
     padding-right: 0;
     padding-left: 10px;
+}
+
+.right-side .team.selected.correct::after,
+.right-side .team.selected.incorrect::after {
+    right: auto;
+    left: 10px;
+    /* Flip check/X icon for right side */
 }
 
 /* --- SUPER BOWL CENTER --- */
@@ -413,15 +406,30 @@ body {
     }
 }
 
-/* --- GRADING STYLES (Added at the bottom, but specific enough not to break base styles) --- */
+/* ================= GRADING STYLES ================= */
 
-/* 1. CORRECT (Green Border + Checkmark) - Background stays white from .selected */
+/* --- Base Selected State (Must be white background) --- */
+.team.selected {
+    background-color: #ffffff !important;
+    border-color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    transform: scale(1.02);
+    z-index: 10;
+    opacity: 1 !important;
+}
+
+.team.selected .name {
+    color: #000000 !important;
+    font-weight: 800;
+}
+
+/* --- 1. CORRECT (Green Border + Checkmark) --- */
 .team.selected.correct {
     border: 3px solid #00aa00 !important;
     /* Thick Green Border */
-    position: relative;
 }
 
+/* The Green Checkmark Icon */
 .team.selected.correct::after {
     content: "✔";
     color: #00aa00;
@@ -431,7 +439,7 @@ body {
     font-size: 1.2rem;
 }
 
-/* 2. INCORRECT (Red Border + Strikethrough) - Background stays white from .selected */
+/* --- 2. INCORRECT (Red Border + Strikethrough + Red X) --- */
 .team.selected.incorrect {
     border: 3px solid #ff0000 !important;
     /* Thick Red Border */
@@ -443,21 +451,40 @@ body {
     /* Dark red text */
 }
 
-/* 3. ELIMINATED / ZOMBIE (Greyed Out - Overrides White) */
-/* This needs to override .selected because an eliminated team shouldn't look "active" */
-.team.eliminated {
-    background-color: #333 !important;
-    /* Dark Grey */
-    border-color: #555 !important;
-    color: #777 !important;
-    /* Grey Text */
-    text-decoration: line-through;
-    opacity: 0.5;
-    pointer-events: none;
-    /* Can't click them anymore */
+/* The Red X Icon (NEW!) */
+.team.selected.incorrect::after {
+    content: "✘";
+    color: #ff0000;
+    font-weight: 900;
+    position: absolute;
+    right: 10px;
+    font-size: 1.1rem;
 }
 
+/* --- 3. ELIMINATED / ZOMBIE (Heavily Faded Out) --- */
+/* This applies to future picks of teams that already lost */
+.team.eliminated {
+    background-color: #1a1a1a !important;
+    /* Very dark background */
+    border-color: #333 !important;
+    color: #555 !important;
+    /* Very dim text */
+    text-decoration: line-through;
+    opacity: 0.4 !important;
+    /* Transparent */
+    filter: grayscale(100%);
+    /* No color */
+    pointer-events: none;
+    /* Cannot be clicked */
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Ensure the logo and name are faded too */
+.team.eliminated .team-logo,
 .team.eliminated .name {
-    color: #777 !important;
-    /* Force Grey Name */
+    opacity: 0.5;
+    filter: grayscale(100%);
+    color: #555 !important;
+    font-weight: normal !important;
 }
