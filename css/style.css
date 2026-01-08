@@ -23,46 +23,83 @@ body {
     min-width: 100%;
 }
 
-/* HEADER */
+/* --- HEADER (Re-organized for Mobile) --- */
 .header {
     text-align: center;
-    padding: 15px;
+    padding: 10px;
     background: #181818;
     border-bottom: 1px solid #333;
     position: sticky;
     top: 0;
     z-index: 100;
     width: 100%;
+    box-sizing: border-box;
+    /* Ensures padding doesn't widen width > 100% */
 }
 
 .header h1 {
-    margin: 0 0 10px 0;
+    margin: 5px 0 10px 0;
     color: var(--accent-gold);
     font-weight: 700;
     letter-spacing: 1px;
     font-size: 1.5rem;
 }
 
+/* Container for all controls */
+.user-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Input Wrapper */
+.input-group {
+    display: flex;
+    gap: 5px;
+}
+
 .user-controls input {
     background: #333;
     border: 1px solid #555;
     color: white;
-    padding: 6px 10px;
-    margin: 0 5px;
+    padding: 8px 10px;
     border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+/* Button Wrapper */
+.btn-group {
+    display: flex;
+    gap: 5px;
 }
 
 .user-controls button {
     background: var(--accent-gold);
     border: none;
-    padding: 6px 15px;
+    padding: 8px 15px;
     font-weight: bold;
     cursor: pointer;
     border-radius: 4px;
     color: #000;
+    font-size: 0.9rem;
 }
 
-/* MAIN LAYOUT */
+.btn-reset {
+    background-color: #ff4444 !important;
+    color: white !important;
+}
+
+#status-message {
+    margin-top: 5px;
+    font-size: 0.8rem;
+    color: #888;
+    height: 15px;
+    /* Prevent jump when text appears */
+}
+
+/* --- MAIN BRACKET LAYOUT --- */
 .bracket-wrapper {
     display: flex;
     justify-content: flex-start;
@@ -191,11 +228,6 @@ body {
     cursor: default;
 }
 
-.team.placeholder:hover {
-    background: transparent;
-    border-color: #444;
-}
-
 .seed {
     background: var(--accent-gold);
     color: #000;
@@ -272,13 +304,11 @@ body {
     align-items: center;
 }
 
-/* UPDATED NFL SHIELD STYLE (Smaller) */
+/* NFL SHIELD LOGO (90px) */
 .nfl-shield-logo {
     width: 90px;
-    /* Reduced from 60px to 15px */
     height: auto;
     margin-bottom: 5px;
-    /* Reduced margin slightly */
     filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
 }
 
@@ -288,7 +318,7 @@ body {
     margin-top: 5px;
 }
 
-/* CHAMPION DISPLAY */
+/* CHAMPION */
 #champion-display {
     margin-top: 30px;
     text-align: center;
@@ -338,7 +368,43 @@ body {
     }
 }
 
-/* RESPONSIVE */
+
+/* --- MOBILE SPECIFIC STYLES --- */
+@media (max-width: 768px) {
+
+    /* Stack controls vertically on phone */
+    .user-controls {
+        flex-direction: column;
+        align-items: stretch;
+        /* Stretch to fill width */
+        width: 100%;
+        max-width: 300px;
+        /* Keep neat width */
+        margin: 0 auto;
+    }
+
+    .input-group,
+    .btn-group {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .user-controls input {
+        flex: 1;
+        /* Inputs share width equally */
+    }
+
+    .user-controls button {
+        flex: 1;
+        /* Buttons share width equally */
+    }
+
+    .header h1 {
+        font-size: 1.2rem;
+    }
+}
+
+/* Maintain other mobile tweaks */
 @media (max-width: 1000px) {
 
     .wc-col,
@@ -353,24 +419,8 @@ body {
         height: 36px;
     }
 
-    .conf-header {
-        font-size: 1.8rem;
-    }
-
     .team-logo {
         height: 24px;
         margin: 0 8px;
     }
-
-    .user-controls {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .nfl-shield-logo {
-        width: 12px;
-    }
-
-    /* Even smaller on mobile */
 }

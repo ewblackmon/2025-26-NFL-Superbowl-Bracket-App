@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NFL Playoff Predictor '26</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -12,13 +12,17 @@
 
     <div class="app-container">
         <div class="header">
-            <h1>PLAYOFF PREDICTOR '26</h1>
+            <h1>NFL PLAYOFF PREDICTOR '26</h1>
             <div class="user-controls">
-                <input type="text" id="username" placeholder="Name">
-                <input type="email" id="useremail" placeholder="Email">
-                <button onclick="submitBracket()">SAVE</button>
-                <button onclick="loadBracket()" class="btn-load">LOAD</button>
-                <button onclick="resetBracket()" style="background-color: #ff4444; color: white;">RESET</button>
+                <div class="input-group">
+                    <input type="text" id="username" placeholder="Name">
+                    <input type="email" id="useremail" placeholder="Email">
+                </div>
+                <div class="btn-group">
+                    <button onclick="submitBracket()">SAVE</button>
+                    <button onclick="loadBracket()" class="btn-load">LOAD</button>
+                    <button onclick="resetBracket()" class="btn-reset">RESET</button>
+                </div>
             </div>
             <div id="status-message"></div>
         </div>
@@ -36,6 +40,8 @@
 
             <div class="super-bowl-center">
                 <div class="sb-logo">
+                    <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="NFL Logo"
+                        class="nfl-shield-logo">
                     <span>SUPER<br>BOWL</span>
                     <span class="sb-roman">LX</span>
                 </div>
