@@ -8,19 +8,24 @@
     --border-color: #444;
 }
 
+/* LOCK THE PAGE SCROLLING */
+html,
 body {
+    height: 100%;
+    /* Crucial: Limits page to screen height */
+    margin: 0;
+    overflow: hidden;
+    /* Prevent the whole page from bouncing */
     background-color: var(--bg-color);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    margin: 0;
-    overflow-x: hidden;
-    min-height: 100vh;
 }
 
 .app-container {
     display: flex;
     flex-direction: column;
     height: 100%;
-    min-width: 100%;
+    /* Fill the locked screen */
+    width: 100%;
 }
 
 /* --- HEADER (Reverted to Sticky) --- */
@@ -155,15 +160,21 @@ body {
     justify-content: flex-start;
     align-items: stretch;
     flex-grow: 1;
+    /* Fill remaining vertical space */
     padding: 20px;
     gap: 10px;
 
-    /* SCROLL FIX: Allow the PAGE to scroll, not this div */
-    overflow: visible;
+    /* FORCE SCROLLING */
+    overflow-x: auto;
+    /* allow horizontal scroll */
+    overflow-y: auto;
+    /* allow vertical scroll */
+    -webkit-overflow-scrolling: touch;
+    /* smooth momentum scrolling on iOS */
 
-    /* Prepare for Zoom Animation */
+    /* ZOOM TRANSITION */
+    transition: transform 0.3s ease, zoom 0.3s ease;
     transform-origin: top left;
-    transition: transform 0.3s ease;
 }
 
 /* --- THE ZOOMED OUT STATE (Fixed) --- */

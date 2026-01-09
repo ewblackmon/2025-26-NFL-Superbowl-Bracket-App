@@ -237,14 +237,15 @@ function toggleZoom() {
     // Toggle the class
     bracket.classList.toggle('zoomed-out');
 
-    // Update Button
+    // Update Button Text
     if (bracket.classList.contains('zoomed-out')) {
-        btn.innerText = "🔍 RESET";
+        // User just clicked Zoom, so offer them the way back
+        btn.innerText = "🔍 NORMAL";
         btn.style.backgroundColor = "#555";
-        window.scrollTo(0, 0);
     } else {
-        btn.innerText = "🔍 ZOOM";
-        btn.style.backgroundColor = "#e67e22";
+        // User is in normal mode, offer them the "Map View"
+        btn.innerText = "🔍 VIEW ALL";
+        btn.style.backgroundColor = "#e67e22"; // Orange
     }
 }
 
