@@ -346,10 +346,19 @@ body {
     flex: 0 0 160px;
     display: flex;
     flex-direction: column;
+
+    /* CHANGED: Center vertically relative to the side columns */
     justify-content: center;
     align-items: center;
+
     margin: 0 10px;
+
+    /* CHANGED: Reset padding to be balanced and minimal */
     padding-top: 20px;
+    padding-bottom: 20px;
+
+    /* Keep height auto so it can grow if the champion logo is huge */
+    height: auto;
 }
 
 .sb-logo {
