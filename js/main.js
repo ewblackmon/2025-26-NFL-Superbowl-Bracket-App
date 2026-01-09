@@ -239,12 +239,12 @@ function toggleZoom() {
 
     // Update Button Text
     if (bracket.classList.contains('zoomed-out')) {
-        // User just clicked Zoom, so offer them the way back
-        btn.innerText = "🔍 NORMAL";
+        // We are currently small (Zoomed Out), so the button offers to Zoom In
+        btn.innerText = "🔍 ZOOM IN";
         btn.style.backgroundColor = "#555";
     } else {
-        // User is in normal mode, offer them the "Map View"
-        btn.innerText = "🔍 VIEW ALL";
+        // We are currently normal, so the button offers to Zoom Out
+        btn.innerText = "🔍 ZOOM OUT";
         btn.style.backgroundColor = "#e67e22"; // Orange
     }
 }

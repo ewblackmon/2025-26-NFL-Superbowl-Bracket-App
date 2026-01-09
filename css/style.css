@@ -347,17 +347,16 @@ body {
     display: flex;
     flex-direction: column;
 
-    /* CHANGED: Center vertically relative to the side columns */
-    justify-content: center;
+    /* Anchor to top so we can always scroll to it */
+    justify-content: flex-start;
     align-items: center;
 
     margin: 0 10px;
 
-    /* CHANGED: Reset padding to be balanced and minimal */
-    padding-top: 20px;
-    padding-bottom: 20px;
+    /* FIX: Large padding to clear the Sticky Header */
+    padding-top: 120px;
 
-    /* Keep height auto so it can grow if the champion logo is huge */
+    padding-bottom: 60px;
     height: auto;
 }
 
