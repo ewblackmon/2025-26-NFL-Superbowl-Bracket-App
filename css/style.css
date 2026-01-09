@@ -347,16 +347,16 @@ body {
     display: flex;
     flex-direction: column;
 
-    /* FIX: Anchor to top so scrolling works reliably */
+    /* ANCHOR TO TOP (Keeps scrolling working) */
     justify-content: flex-start;
     align-items: center;
 
     margin: 0 10px;
 
-    /* VISUAL CENTER: Push it down ~25% of the viewport height */
-    padding-top: 25vh;
+    /* FIX: Use Pixels instead of % so it doesn't jump on tall phones */
+    padding-top: 100px;
 
-    /* SAFETY: Huge buffer to ensure the bottom logo clears phone menus */
+    /* SAFETY: Buffer for the bottom champion logo */
     padding-bottom: 150px;
 
     height: auto;
