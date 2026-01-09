@@ -3,8 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, minimum-scale=0.25, maximum-scale=5.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NFL Playoff Predictor '26</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -33,14 +32,15 @@
                     <button onclick="submitBracket()" id="btn-save">SAVE</button>
                     <button onclick="loadBracket()" class="btn-load" id="btn-load">LOAD</button>
                     <button onclick="openLeaderboard()" class="btn-spy">🏆 LEADERS</button>
-                    <button onclick="openScoringModal()" class="btn-info">SCORING</button>
+                    <button onclick="toggleZoom()" class="btn-zoom" id="btn-zoom">🔍 ZOOM</button> <button
+                        onclick="openScoringModal()" class="btn-info">SCORING</button>
                     <button id="reset-btn" class="btn-reset">RESET</button>
                 </div>
             </div>
             <div id="status-message"></div>
         </div>
 
-        <div class="bracket-wrapper">
+        <div class="bracket-wrapper" id="bracket-area">
             <div class="conference-container">
                 <h2 class="conf-header nfc-color">NFC</h2>
                 <div class="rounds-row left-side">

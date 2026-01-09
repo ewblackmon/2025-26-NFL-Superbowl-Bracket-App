@@ -519,3 +519,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+function toggleZoom() {
+    const bracket = document.getElementById('bracket-area');
+    const btn = document.getElementById('btn-zoom');
+
+    // Toggle the class
+    bracket.classList.toggle('zoomed-out');
+
+    // Update Button Text
+    if (bracket.classList.contains('zoomed-out')) {
+        btn.innerText = "🔍 RESET";
+        btn.style.backgroundColor = "#555";
+    } else {
+        btn.innerText = "🔍 ZOOM";
+        btn.style.backgroundColor = "#e67e22"; // Orange
+    }
+}

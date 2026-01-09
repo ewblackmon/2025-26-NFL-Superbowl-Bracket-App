@@ -12,47 +12,28 @@ body {
     background-color: var(--bg-color);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
-    /* CHANGED: Allow body to handle the width */
-    overflow-x: visible;
+    overflow-x: hidden;
     min-height: 100vh;
-    min-width: fit-content;
-    /* Crucial for zooming out */
 }
 
-/* --- MAIN CONTAINER (Pushes bracket down below fixed header) --- */
 .app-container {
     display: flex;
     flex-direction: column;
     height: 100%;
-
-    /* CHANGED: Add top padding equal to header height (approx 140px) */
-    padding-top: 140px;
-
-    min-width: fit-content;
-    width: 100%;
+    min-width: 100%;
 }
 
-/* --- FIXED HEADER (Stays put while zooming bracket) --- */
+/* --- HEADER (Reverted to Sticky) --- */
 .header {
     text-align: center;
     padding: 10px;
     background: #181818;
     border-bottom: 1px solid #333;
-
-    /* CRITICAL CHANGE: Fixed locks it to the screen "glass" */
-    position: fixed;
+    position: sticky;
     top: 0;
-    left: 0;
-
-    /* Force width to be the screen width, not the bracket width */
-    width: 100vw;
-    max-width: 100%;
-
-    z-index: 1000;
+    z-index: 100;
+    width: 100%;
     box-sizing: border-box;
-
-    /* Prevent the header from receiving zoom gestures (optional, helps stability) */
-    touch-action: pan-y;
 }
 
 .header h1 {
@@ -63,7 +44,6 @@ body {
     font-size: 1.5rem;
 }
 
-/* SCORE DISPLAY IN HEADER */
 #user-score-display {
     display: block;
     margin-bottom: 10px;
@@ -79,7 +59,7 @@ body {
     text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
 }
 
-/* CONTROLS (Mobile Fixes) */
+/* CONTROLS */
 .user-controls {
     display: flex;
     justify-content: center;
@@ -97,7 +77,7 @@ body {
     justify-content: center;
 }
 
-/* FIX FOR SAMSUNG S24 / MOBILE WIDTH */
+/* Mobile Input Sizing */
 .user-controls input {
     background: #333;
     border: 1px solid #555;
@@ -106,9 +86,7 @@ body {
     border-radius: 4px;
     font-size: 1rem;
     max-width: 40vw;
-    /* Prevent inputs from pushing off screen */
     box-sizing: border-box;
-    /* Include padding in width calculation */
 }
 
 .user-controls button {
@@ -127,6 +105,23 @@ body {
     color: white !important;
 }
 
+.btn-info {
+    background-color: #31708f !important;
+    color: white !important;
+}
+
+.btn-spy {
+    background-color: #9b59b6 !important;
+    color: white !important;
+}
+
+.btn-zoom {
+    background-color: #e67e22 !important;
+    color: white !important;
+}
+
+/* Orange Zoom Button */
+
 #status-message {
     margin-top: 5px;
     font-size: 0.8rem;
@@ -142,8 +137,25 @@ body {
     flex-grow: 1;
     padding: 20px;
     gap: 10px;
-    /* CHANGED: REMOVED overflow-x: auto. This lets the page handle the scroll. */
-    overflow: visible;
+    overflow-x: auto;
+    /* Reverted: Allows scrolling */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    /* ZOOM TRANSITION */
+    transition: transform 0.3s ease, zoom 0.3s ease;
+    transform-origin: top left;
+}
+
+/* --- THE ZOOMED OUT STATE (Magic Class) --- */
+.bracket-wrapper.zoomed-out {
+    /* For Chrome/Android (Best Performance) */
+    zoom: 0.45;
+
+    /* Fallback for others */
+    transform: scale(0.45);
+    width: 220%;
+    /* Expand width so it doesn't get cut off when scaled */
 }
 
 @media (min-width: 1250px) {
@@ -383,58 +395,31 @@ body {
     }
 }
 
-/* --- MOBILE --- */
-@media (max-width: 768px) {
-    .user-controls {
-        flex-direction: column;
-        width: 100%;
-        max-width: 100%;
-        padding: 0 10px;
-    }
-
-    .input-group,
-    .btn-group {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .user-controls input {
-        width: 100%;
-        max-width: 100%;
-        margin-bottom: 5px;
-    }
-
-    .user-controls button {
-        flex: 1;
-    }
-
-    .header h1 {
-        font-size: 1.2rem;
-    }
+/* --- COMMUNITY STATS --- */
+.stat-badge {
+    font-size: 0.75rem;
+    color: #888;
+    background: #222;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    border: 1px solid #444;
+    font-weight: normal;
 }
 
-@media (max-width: 1000px) {
-
-    .wc-col,
-    .div-col,
-    .champ-col,
-    .super-bowl-center {
-        flex: 0 0 160px;
-    }
-
-    .team {
-        font-size: 0.9rem;
-        height: 36px;
-    }
-
-    .team-logo {
-        height: 24px;
-        margin: 0 8px;
-    }
+.team.selected .stat-badge {
+    color: #333;
+    background: #e0e0e0;
+    border-color: #ccc;
+    font-weight: bold;
 }
 
-/* ================= GRADING & POINTS STYLES ================= */
+.right-side .stat-badge {
+    margin-left: 0;
+    margin-right: 8px;
+}
 
+/* --- GRADING STYLES --- */
 .team.selected {
     background-color: #ffffff !important;
     border-color: #ffffff !important;
@@ -449,12 +434,10 @@ body {
     font-weight: 800;
 }
 
-/* 1. CORRECT (Green Border) */
 .team.selected.correct {
     border: 3px solid #00aa00 !important;
 }
 
-/* 2. INCORRECT (Red Border + Strikethrough + Red X) */
 .team.selected.incorrect {
     border: 3px solid #ff0000 !important;
 }
@@ -473,8 +456,6 @@ body {
     font-size: 1.1rem;
 }
 
-/* 3. POINTS DISPLAY (Dynamic based on round) */
-/* WC = +2 */
 .team.selected.correct.wc::after {
     content: "✔ +2";
     color: #00aa00;
@@ -484,7 +465,6 @@ body {
     font-size: 0.9rem;
 }
 
-/* DIV = +3 */
 .team.selected.correct.div::after {
     content: "✔ +3";
     color: #00aa00;
@@ -494,7 +474,6 @@ body {
     font-size: 0.9rem;
 }
 
-/* CONF = +5 */
 .team.selected.correct.champ::after {
     content: "✔ +5";
     color: #00aa00;
@@ -504,7 +483,6 @@ body {
     font-size: 0.9rem;
 }
 
-/* SB = +10 */
 .team.selected.correct.sb::after {
     content: "✔ +10";
     color: #00aa00;
@@ -514,7 +492,6 @@ body {
     font-size: 0.9rem;
 }
 
-/* Right side adjustment for points */
 .right-side .team.selected.correct.wc::after,
 .right-side .team.selected.correct.div::after,
 .right-side .team.selected.correct.champ::after,
@@ -523,7 +500,6 @@ body {
     left: 10px;
 }
 
-/* 4. ELIMINATED (Faded) */
 .team.eliminated {
     background-color: #1a1a1a !important;
     border-color: #333 !important;
@@ -544,17 +520,43 @@ body {
     font-weight: normal !important;
 }
 
-/* --- NEW BUTTON STYLE --- */
-.btn-info {
-    background-color: #31708f !important;
-    /* Nice calm blue */
-    color: white !important;
+/* --- SPY BANNER --- */
+#spy-banner {
+    display: none;
+    background: #c0392b;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    animation: slideDown 0.3s;
 }
 
-/* --- SCORING MODAL STYLES --- */
+#spy-banner button {
+    background: white;
+    color: #c0392b;
+    border: none;
+    padding: 5px 15px;
+    margin-left: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+body.spy-mode .user-controls {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+body.spy-mode .header {
+    border-bottom: none;
+}
+
+/* --- MODALS --- */
 .modal {
     display: none;
-    /* Hidden by default */
     position: fixed;
     z-index: 1000;
     left: 0;
@@ -562,14 +564,12 @@ body {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.85);
-    /* Dark transparent background */
     backdrop-filter: blur(5px);
 }
 
 .modal-content {
     background-color: #222;
     margin: 15% auto;
-    /* 15% from the top and centered */
     padding: 25px;
     border: 1px solid #444;
     width: 90%;
@@ -642,7 +642,6 @@ body {
     font-size: 0.9rem;
 }
 
-/* Match colors to the bracket logic */
 .point-badge.wc {
     color: #00aa00;
     border: 1px solid #00aa00;
@@ -682,13 +681,7 @@ body {
     font-size: 1.3rem;
 }
 
-/* --- LEADERBOARD & SPY STYLES --- */
-.btn-spy {
-    background-color: #9b59b6 !important;
-    /* Purple */
-    color: white !important;
-}
-
+/* LEADERBOARD LIST */
 #leaderboard-list {
     max-height: 60vh;
     overflow-y: auto;
@@ -707,8 +700,6 @@ body {
     font-weight: bold;
     font-size: 1.1rem;
 }
-
-/* First Place */
 
 .leader-info {
     display: flex;
@@ -738,67 +729,4 @@ body {
 .btn-spy-action:hover {
     background: #9b59b6;
     border-color: #9b59b6;
-}
-
-/* SPY BANNER (Top Bar) */
-#spy-banner {
-    display: none;
-    /* Hidden by default */
-    background: #c0392b;
-    /* Dark Red */
-    color: white;
-    padding: 10px;
-    text-align: center;
-    position: sticky;
-    top: 0;
-    z-index: 200;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    animation: slideDown 0.3s;
-}
-
-#spy-banner button {
-    background: white;
-    color: #c0392b;
-    border: none;
-    padding: 5px 15px;
-    margin-left: 15px;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 4px;
-}
-
-/* Hide controls when spying */
-body.spy-mode .user-controls {
-    opacity: 0.3;
-    pointer-events: none;
-}
-
-body.spy-mode .header {
-    border-bottom: none;
-}
-
-/* --- COMMUNITY STATS (PERCENTAGE BADGE) --- */
-.stat-badge {
-    font-size: 0.75rem;
-    color: #888;
-    background: #222;
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-left: 8px;
-    border: 1px solid #444;
-    font-weight: normal;
-}
-
-/* When selected, make it match the theme */
-.team.selected .stat-badge {
-    color: #333;
-    background: #e0e0e0;
-    border-color: #ccc;
-    font-weight: bold;
-}
-
-/* Adjust right-side alignment */
-.right-side .stat-badge {
-    margin-left: 0;
-    margin-right: 8px;
 }
