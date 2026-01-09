@@ -59,22 +59,42 @@ body {
     text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
 }
 
-/* CONTROLS */
+/* --- CONTROLS (Fixed Wrapping) --- */
 .user-controls {
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-wrap: wrap;
+    flex-direction: column;
+    /* Stack inputs above buttons */
     gap: 10px;
     width: 100%;
     box-sizing: border-box;
 }
 
-.input-group,
+.input-group {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    width: 100%;
+}
+
 .btn-group {
     display: flex;
     gap: 5px;
     justify-content: center;
+    flex-wrap: wrap;
+    /* CRITICAL FIX: Allows buttons to start a new line */
+    width: 100%;
+}
+
+/* Make buttons slightly smaller on mobile to fit better */
+.user-controls button {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    flex: 1 1 auto;
+    /* Allow buttons to shrink/grow */
+    min-width: 80px;
+    /* Prevent them from getting too skinny */
 }
 
 /* Mobile Input Sizing */
@@ -129,7 +149,7 @@ body {
     height: 15px;
 }
 
-/* --- BRACKET LAYOUT --- */
+/* --- BRACKET LAYOUT (Scroll Fix) --- */
 .bracket-wrapper {
     display: flex;
     justify-content: flex-start;
@@ -137,25 +157,22 @@ body {
     flex-grow: 1;
     padding: 20px;
     gap: 10px;
-    overflow-x: auto;
-    /* Reverted: Allows scrolling */
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
 
-    /* ZOOM TRANSITION */
-    transition: transform 0.3s ease, zoom 0.3s ease;
+    /* SCROLL FIX: Allow the PAGE to scroll, not this div */
+    overflow: visible;
+
+    /* Prepare for Zoom Animation */
     transform-origin: top left;
+    transition: transform 0.3s ease;
 }
 
-/* --- THE ZOOMED OUT STATE (Magic Class) --- */
+/* --- THE ZOOMED OUT STATE (Fixed) --- */
 .bracket-wrapper.zoomed-out {
-    /* For Chrome/Android (Best Performance) */
-    zoom: 0.45;
+    /* Use standard Transform instead of Zoom */
+    transform: scale(0.5);
 
-    /* Fallback for others */
-    transform: scale(0.45);
-    width: 220%;
-    /* Expand width so it doesn't get cut off when scaled */
+    /* Force the width to double so the content doesn't crunch */
+    width: 200%;
 }
 
 @media (min-width: 1250px) {
