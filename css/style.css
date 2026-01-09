@@ -19,27 +19,40 @@ body {
     /* Crucial for zooming out */
 }
 
+/* --- MAIN CONTAINER (Pushes bracket down below fixed header) --- */
 .app-container {
     display: flex;
     flex-direction: column;
     height: 100%;
-    /* CHANGED: Let the container grow with the bracket */
+
+    /* CHANGED: Add top padding equal to header height (approx 140px) */
+    padding-top: 140px;
+
     min-width: fit-content;
     width: 100%;
 }
 
+/* --- FIXED HEADER (Stays put while zooming bracket) --- */
 .header {
     text-align: center;
     padding: 10px;
     background: #181818;
     border-bottom: 1px solid #333;
-    position: sticky;
+
+    /* CRITICAL CHANGE: Fixed locks it to the screen "glass" */
+    position: fixed;
     top: 0;
-    z-index: 100;
-    /* CHANGED: Ensure header stretches across the full zoomed-out view */
-    width: 100%;
-    min-width: 100%;
+    left: 0;
+
+    /* Force width to be the screen width, not the bracket width */
+    width: 100vw;
+    max-width: 100%;
+
+    z-index: 1000;
     box-sizing: border-box;
+
+    /* Prevent the header from receiving zoom gestures (optional, helps stability) */
+    touch-action: pan-y;
 }
 
 .header h1 {
