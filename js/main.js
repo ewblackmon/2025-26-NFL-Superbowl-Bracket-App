@@ -395,19 +395,33 @@ function loadBracket(spyEmail = null) {
         .then(data => {
             if (data.status === "found") {
                 picks = data.picks;
+
+                // Handle Spy Mode UI
                 if (isSpying) {
                     document.body.classList.add('spy-mode');
                     document.getElementById('spy-banner').style.display = 'block';
                     document.getElementById('spy-target-name').innerText = data.name.toUpperCase();
-                } else { document.getElementById('username').value = data.name; }
+                } else {
+                    document.getElementById('username').value = data.name;
+                }
 
+                // Show Score if available
                 if (data.score !== undefined) {
                     document.getElementById('user-score-display').style.display = 'block';
                     document.getElementById('score-value').innerText = data.score;
                 }
+
                 refreshAllRounds();
                 restoreUIFromPicks();
-                if (msg && !isSpying) msg.innerText = "Loaded!";
+
+                // FIX: Show "Loaded!" then clear it after 2 seconds
+                if (msg && !isSpying) {
+                    msg.innerText = "Loaded!";
+                    setTimeout(() => {
+                        msg.innerText = "";
+                    }, 2000);
+                }
+
                 try { if (data.masterPicks) gradeBracket(data.masterPicks); } catch (err) { }
             } else {
                 alert("Not found.");
