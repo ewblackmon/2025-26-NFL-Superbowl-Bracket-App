@@ -302,14 +302,61 @@ function resetBracket() {
 }
 
 function submitBracket() {
-    if (document.body.classList.contains('spy-mode')) { alert("You are spying! Exit spy mode to save your own bracket."); return; }
+    // 1. SPY CHECK
+    if (document.body.classList.contains('spy-mode')) {
+        alert("You are spying! Exit spy mode to save your own bracket.");
+        return;
+    }
+
     const user = document.getElementById('username').value;
     const email = document.getElementById('useremail').value;
     const msg = document.getElementById('status-message');
-    if (!user || !email) { alert("Name and Email required!"); return; }
+
+    // 2. INPUT VALIDATION
+    if (!user || !email) {
+        alert("Name and Email required!");
+        return;
+    }
+
+    if (msg) msg.innerText = "Checking for existing bracket...";
+
+    // 3. THE "BACKGROUND CHECK"
+    // We send a read request (GET) first to see if this email exists
+    fetch(`${scriptURL}?email=${encodeURIComponent(email)}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === "found") {
+                // CASE A: User Exists -> WARN THEM
+                const confirmOverwrite = confirm(
+                    `⚠️ EXISTING BRACKET FOUND\n\n` +
+                    `We found a saved bracket for "${data.name}" under this email.\n\n` +
+                    `Do you want to OVERWRITE it with what is currently on your screen?\n\n` +
+                    `• Click OK to Save (This deletes your old bracket)\n` +
+                    `• Click Cancel to Stop`
+                );
+
+                if (confirmOverwrite) {
+                    executeSave(user, email, msg);
+                } else {
+                    if (msg) msg.innerText = "Save Cancelled.";
+                }
+            } else {
+                // CASE B: New User -> SAVE IMMEDIATELY
+                executeSave(user, email, msg);
+            }
+        })
+        .catch(err => {
+            // Fallback: If the check fails (e.g. offline), try to save anyway
+            console.error(err);
+            executeSave(user, email, msg);
+        });
+}
+
+// Helper function to handle the actual saving
+function executeSave(user, email, msg) {
+    if (msg) msg.innerText = "Saving...";
 
     const payload = { name: user, email: email, picks: picks };
-    if (msg) msg.innerText = "Saving...";
 
     fetch(scriptURL, {
         method: 'POST', mode: 'no-cors',
@@ -318,7 +365,7 @@ function submitBracket() {
     }).then(() => {
         if (msg) msg.innerText = "Saved!";
         localStorage.setItem('nflBracketEmail', email);
-        alert("Bracket Saved!");
+        alert("Bracket Saved Successfully!");
     });
 }
 
@@ -452,3 +499,23 @@ window.onclick = function (event) {
     if (event.target == document.getElementById('scoring-modal')) closeScoringModal();
     if (event.target == document.getElementById('leaderboard-modal')) closeLeaderboard();
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    refreshAllRounds();
+    fetchCommunityStats();
+
+    // Existing Reset Button Logic
+    const resetBtn = document.getElementById('reset-btn');
+    if (resetBtn) resetBtn.addEventListener('click', resetBracket);
+
+    // NEW: "Press Enter" Listener
+    const emailInput = document.getElementById('useremail');
+    if (emailInput) {
+        emailInput.addEventListener('keyup', function (event) {
+            if (event.key === 'Enter') {
+                // Trigger the Load function
+                loadBracket();
+            }
+        });
+    }
+});
