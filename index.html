@@ -11,6 +11,11 @@
 <body>
 
     <div class="app-container">
+        <div id="spy-banner">
+            <span>👁️ SPYING ON: <strong id="spy-target-name">PLAYER</strong></span>
+            <button onclick="exitSpyMode()">EXIT VIEW</button>
+        </div>
+
         <div class="header">
             <h1>NFL PLAYOFF PREDICTOR '26</h1>
 
@@ -24,10 +29,11 @@
                     <input type="email" id="useremail" placeholder="Email">
                 </div>
                 <div class="btn-group">
-                    <button onclick="submitBracket()">SAVE</button>
-                    <button onclick="loadBracket()" class="btn-load">LOAD</button>
-                    <button onclick="openScoringModal()" class="btn-info">SCORING</button> <button id="reset-btn"
-                        class="btn-reset">RESET</button>
+                    <button onclick="submitBracket()" id="btn-save">SAVE</button>
+                    <button onclick="loadBracket()" class="btn-load" id="btn-load">LOAD</button>
+                    <button onclick="openLeaderboard()" class="btn-spy">🏆 LEADERS</button>
+                    <button onclick="openScoringModal()" class="btn-info">SCORING</button>
+                    <button id="reset-btn" class="btn-reset">RESET</button>
                 </div>
             </div>
             <div id="status-message"></div>
@@ -68,33 +74,24 @@
         <div class="modal-content">
             <span class="close-btn" onclick="closeScoringModal()">&times;</span>
             <h2>How Scoring Works</h2>
-    
             <p style="color: #ccc; font-size: 0.9rem; line-height: 1.4; margin-bottom: 20px;">
-                Points are earned for every correct prediction you make in each round.
-                The further the tournament progresses, the more valuable each win becomes!
+                Points are earned for every correct prediction.
             </p>
-    
             <ul>
-                <li>
-                    <span class="point-badge wc">+2</span>
-                    <strong>Wild Card Round</strong> (6 Games)
-                </li>
-                <li>
-                    <span class="point-badge div">+3</span>
-                    <strong>Divisional Round</strong> (4 Games)
-                </li>
-                <li>
-                    <span class="point-badge champ">+5</span>
-                    <strong>Conference Champ</strong> (2 Games)
-                </li>
-                <li>
-                    <span class="point-badge sb">+10</span>
-                    <strong>Super Bowl Winner</strong>
-                </li>
+                <li><span class="point-badge wc">+2</span> <strong>Wild Card Round</strong></li>
+                <li><span class="point-badge div">+3</span> <strong>Divisional Round</strong></li>
+                <li><span class="point-badge champ">+5</span> <strong>Conference Champ</strong></li>
+                <li><span class="point-badge sb">+10</span> <strong>Super Bowl Winner</strong></li>
             </ul>
-            <div class="total-score-box">
-                Total Possible Score: <span>44</span>
-            </div>
+            <div class="total-score-box">Total Possible: <span>44</span></div>
+        </div>
+    </div>
+
+    <div id="leaderboard-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeLeaderboard()">&times;</span>
+            <h2>🏆 Leaderboard</h2>
+            <div id="leaderboard-list">Loading...</div>
         </div>
     </div>
 

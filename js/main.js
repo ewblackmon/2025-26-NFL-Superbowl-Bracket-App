@@ -1,6 +1,7 @@
 // --- CONFIGURATION ---
 // 1. PASTE YOUR DEPLOYED GOOGLE SCRIPT URL BETWEEN THE QUOTES BELOW:
 const scriptURL = "https://script.google.com/macros/s/AKfycbyieXUOJqeOh3l4KkrUBYmQkptpsWf-ersSvhFe80sKoUws9fnzAreARW4CrNlpeuKW9Q/exec";
+
 // --- DATA ---
 const teamFullNames = {
     "DEN": "Denver Broncos", "PIT": "Pittsburgh Steelers", "HOU": "Houston Texans",
@@ -29,19 +30,84 @@ const initialData = {
     }
 };
 
-let picks = {
-    afc: { wcWinners: [], divWinners: [], champion: null },
-    nfc: { wcWinners: [], divWinners: [], champion: null },
-    superBowlWinner: null
-};
+let picks = { afc: { wcWinners: [], divWinners: [], champion: null }, nfc: { wcWinners: [], divWinners: [], champion: null }, superBowlWinner: null };
+let communityStats = {}; // Stores the fetched % data
 
 document.addEventListener('DOMContentLoaded', () => {
     refreshAllRounds();
+    fetchCommunityStats(); // NEW: Fetch stats on load
     const resetBtn = document.getElementById('reset-btn');
     if (resetBtn) resetBtn.addEventListener('click', resetBracket);
 });
 
-// --- RENDER LOGIC ---
+// --- STATS LOGIC ---
+function fetchCommunityStats() {
+    fetch(`${scriptURL}?cmd=stats`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                communityStats = data.stats;
+                refreshAllRounds(); // Re-render to show badges
+            }
+        });
+}
+
+function getStatBadge(teamName, round) {
+    // 1. If stats haven't loaded yet, return empty (so we don't show 0% while loading)
+    if (Object.keys(communityStats).length === 0) return '';
+
+    // 2. If the team is NOT in the database, it means 0 people picked them.
+    // Return a 0% badge instead of hiding it.
+    if (!communityStats[teamName]) return `<span class="stat-badge">0%</span>`;
+
+    // 3. Get the specific round percentage
+    const pct = communityStats[teamName][round];
+
+    // 4. Return the badge (Force 0 if the value is missing/undefined)
+    return `<span class="stat-badge">${pct !== undefined ? pct : 0}%</span>`;
+}
+
+// --- UI MODALS ---
+function openScoringModal() { document.getElementById('scoring-modal').style.display = 'block'; }
+function closeScoringModal() { document.getElementById('scoring-modal').style.display = 'none'; }
+function closeLeaderboard() { document.getElementById('leaderboard-modal').style.display = 'none'; }
+
+function openLeaderboard() {
+    document.getElementById('leaderboard-modal').style.display = 'block';
+    const list = document.getElementById('leaderboard-list');
+    list.innerHTML = '<div style="text-align:center; padding:20px;">Loading Scores...</div>';
+
+    fetch(`${scriptURL}?cmd=leaderboard`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                list.innerHTML = '';
+                if (data.leaderboard.length === 0) { list.innerHTML = '<div style="padding:10px;">No brackets saved yet.</div>'; return; }
+                data.leaderboard.forEach((player, index) => {
+                    const row = document.createElement('div');
+                    row.className = 'leader-row';
+                    row.innerHTML = `<div class="leader-info"><span class="leader-name">${index + 1}. ${player.name}</span><span class="leader-score">${player.score} Pts</span></div><button class="btn-spy-action" onclick="spyOnUser('${player.email}')">VIEW</button>`;
+                    list.appendChild(row);
+                });
+            } else { list.innerHTML = 'Error loading leaderboard.'; }
+        });
+}
+
+function spyOnUser(email) { closeLeaderboard(); loadBracket(email); }
+
+function exitSpyMode() {
+    document.body.classList.remove('spy-mode');
+    document.getElementById('spy-banner').style.display = 'none';
+    const currentEmail = document.getElementById('useremail').value;
+    if (currentEmail) { loadBracket(); }
+    else {
+        const savedEmail = localStorage.getItem('nflBracketEmail');
+        if (savedEmail) { document.getElementById('useremail').value = savedEmail; loadBracket(); }
+        else { resetBracket(); }
+    }
+}
+
+// --- CORE RENDER FUNCTIONS ---
 function refreshAllRounds() {
     renderConferenceSide('afc');
     renderConferenceSide('nfc');
@@ -92,20 +158,17 @@ function generateConferenceRound(conf) {
 function renderSuperBowl() {
     const container = document.getElementById('super-bowl-matchup');
     container.innerHTML = '';
-
     if (picks.afc.champion && picks.nfc.champion) {
         const div = document.createElement('div');
         div.className = 'matchup';
         div.innerHTML = `
             <div class="team" data-name="${picks.nfc.champion.name}" onclick="selectWinner('sb', 'sb', 0, '${picks.nfc.champion.name}', 0, this)">
-                <span class="seed sb-seed nfc-seed">NFC</span>
-                <img src="${picks.nfc.champion.logo}" alt="${picks.nfc.champion.name}" class="team-logo">
-                <span class="name">${picks.nfc.champion.name}</span>
+                <span class="seed sb-seed nfc-seed">NFC</span><img src="${picks.nfc.champion.logo}" class="team-logo"><span class="name">${picks.nfc.champion.name}</span>
+                ${getStatBadge(picks.nfc.champion.name, 'sb')}
             </div>
             <div class="team" data-name="${picks.afc.champion.name}" onclick="selectWinner('sb', 'sb', 0, '${picks.afc.champion.name}', 0, this)">
-                <span class="seed sb-seed afc-seed">AFC</span>
-                <img src="${picks.afc.champion.logo}" alt="${picks.afc.champion.name}" class="team-logo">
-                <span class="name">${picks.afc.champion.name}</span>
+                <span class="seed sb-seed afc-seed">AFC</span><img src="${picks.afc.champion.logo}" class="team-logo"><span class="name">${picks.afc.champion.name}</span>
+                ${getStatBadge(picks.afc.champion.name, 'sb')}
             </div>
         `;
         container.appendChild(div);
@@ -113,10 +176,7 @@ function renderSuperBowl() {
     } else {
         const div = document.createElement('div');
         div.className = 'matchup';
-        div.innerHTML = `
-            <div class="team placeholder"><span class="name">NFC Champ</span></div>
-            <div class="team placeholder"><span class="name">AFC Champ</span></div>
-        `;
+        div.innerHTML = `<div class="team placeholder"><span class="name">NFC Champ</span></div><div class="team placeholder"><span class="name">AFC Champ</span></div>`;
         container.appendChild(div);
     }
 }
@@ -127,21 +187,23 @@ function displayChampion(teamAbbr) {
         initialData.afc.bye, ...initialData.afc.wildCardMatchups.flatMap(m => [m.home, m.away]),
         initialData.nfc.bye, ...initialData.nfc.wildCardMatchups.flatMap(m => [m.home, m.away])
     ].find(t => t.name === teamAbbr);
-
     const fullName = teamFullNames[teamAbbr] || teamAbbr;
     const logoUrl = teamObj ? teamObj.logo : "";
     champContainer.innerHTML = `<div class="champ-label">Predicted Champion:</div><div class="champ-name">The ${fullName}!!</div><img src="${logoUrl}" class="champ-big-logo">`;
 }
 
+// --- UPDATED CREATE MATCHUP DIV (Now Includes Stats!) ---
 function createMatchupDiv(home, away, conf, round, matchId) {
     const div = document.createElement('div');
     div.className = 'matchup';
     div.innerHTML = `
         <div class="team" data-name="${away.name}" onclick="selectWinner('${conf}', '${round}', ${matchId}, '${away.name}', ${away.seed}, this)">
             <span class="seed">${away.seed}</span><img src="${away.logo}" class="team-logo"><span class="name">${away.name}</span>
+            ${getStatBadge(away.name, round)}
         </div>
         <div class="team" data-name="${home.name}" onclick="selectWinner('${conf}', '${round}', ${matchId}, '${home.name}', ${home.seed}, this)">
             <span class="seed">${home.seed}</span><img src="${home.logo}" class="team-logo"><span class="name">${home.name}</span>
+            ${getStatBadge(home.name, round)}
         </div>
     `;
     return div;
@@ -149,9 +211,7 @@ function createMatchupDiv(home, away, conf, round, matchId) {
 
 function renderDivisionalPlaceholders(conf) {
     const container = document.getElementById(`${conf}-div`);
-    container.innerHTML = '';
-    const bye = initialData[conf].bye;
-    container.innerHTML = `<div class="matchup"><div class="team placeholder"><span class="name">Lowest Seed</span></div><div class="team" style="cursor: default; opacity: 0.8;"><span class="seed">${bye.seed}</span><img src="${bye.logo}" class="team-logo"><span class="name">${bye.name}</span></div></div><div class="matchup"><div class="team placeholder"><span class="name">Winner WC</span></div><div class="team placeholder"><span class="name">Winner WC</span></div></div>`;
+    container.innerHTML = `<div class="matchup"><div class="team placeholder"><span class="name">Lowest Seed</span></div><div class="team" style="cursor: default; opacity: 0.8;"><span class="seed">${initialData[conf].bye.seed}</span><img src="${initialData[conf].bye.logo}" class="team-logo"><span class="name">${initialData[conf].bye.name}</span>${getStatBadge(initialData[conf].bye.name, 'div')}</div></div><div class="matchup"><div class="team placeholder"><span class="name">Winner WC</span></div><div class="team placeholder"><span class="name">Winner WC</span></div></div>`;
 }
 
 function renderRoundPlaceholders(conf, round, count) {
@@ -189,7 +249,6 @@ function selectWinner(conf, round, matchId, teamName, seed, element) {
     else if (round === 'sb') {
         picks.superBowlWinner = teamName;
     }
-
     refreshAllRounds();
     restoreUIFromPicks();
 }
@@ -209,11 +268,18 @@ function restoreSelection(conf, round, matchId, teamName) {
         teamDiv.style.setProperty('background-color', '#ffffff', 'important');
         teamDiv.style.setProperty('border-color', '#ffffff', 'important');
         teamDiv.style.setProperty('opacity', '1', 'important');
-
         const nameSpan = teamDiv.querySelector('.name');
         if (nameSpan) {
             nameSpan.style.setProperty('color', '#000000', 'important');
             nameSpan.style.setProperty('font-weight', '800', 'important');
+        }
+        // Force the badge to match theme (dark text)
+        const badge = teamDiv.querySelector('.stat-badge');
+        if (badge) {
+            badge.style.setProperty('background', '#ddd', 'important');
+            badge.style.setProperty('color', '#333', 'important');
+            badge.style.setProperty('border-color', '#ccc', 'important');
+            badge.style.setProperty('font-weight', 'bold', 'important');
         }
     }
 }
@@ -236,6 +302,7 @@ function resetBracket() {
 }
 
 function submitBracket() {
+    if (document.body.classList.contains('spy-mode')) { alert("You are spying! Exit spy mode to save your own bracket."); return; }
     const user = document.getElementById('username').value;
     const email = document.getElementById('useremail').value;
     const msg = document.getElementById('status-message');
@@ -255,30 +322,33 @@ function submitBracket() {
     });
 }
 
-function loadBracket() {
-    let email = document.getElementById('useremail').value || localStorage.getItem('nflBracketEmail');
+function loadBracket(spyEmail = null) {
+    const isSpying = !!spyEmail;
+    let email = spyEmail || document.getElementById('useremail').value || localStorage.getItem('nflBracketEmail');
     if (!email) { alert("Enter email."); return; }
-    document.getElementById('useremail').value = email;
 
+    if (!isSpying) document.getElementById('useremail').value = email;
     const msg = document.getElementById('status-message');
-    if (msg) msg.innerText = "Loading...";
+    if (msg && !isSpying) msg.innerText = "Loading...";
 
     fetch(`${scriptURL}?email=${encodeURIComponent(email)}`)
         .then(r => r.json())
         .then(data => {
             if (data.status === "found") {
                 picks = data.picks;
-                document.getElementById('username').value = data.name;
+                if (isSpying) {
+                    document.body.classList.add('spy-mode');
+                    document.getElementById('spy-banner').style.display = 'block';
+                    document.getElementById('spy-target-name').innerText = data.name.toUpperCase();
+                } else { document.getElementById('username').value = data.name; }
 
-                // SHOW SCORE (New Feature)
                 if (data.score !== undefined) {
                     document.getElementById('user-score-display').style.display = 'block';
                     document.getElementById('score-value').innerText = data.score;
                 }
-
                 refreshAllRounds();
                 restoreUIFromPicks();
-                if (msg) msg.innerText = "Loaded!";
+                if (msg && !isSpying) msg.innerText = "Loaded!";
                 try { if (data.masterPicks) gradeBracket(data.masterPicks); } catch (err) { }
             } else {
                 alert("Not found.");
@@ -289,6 +359,8 @@ function loadBracket() {
 
 function gradeBracket(master) {
     let deadTeams = new Set();
+
+    // 1. Build the Kill List
     ['afc', 'nfc'].forEach(conf => {
         if (master[conf] && master[conf].wcWinners) {
             master[conf].wcWinners.forEach((mWin, i) => {
@@ -301,8 +373,9 @@ function gradeBracket(master) {
         }
     });
 
-    // NOTE: Added specific class names ('wc', 'div', 'champ') for CSS Point Values
+    // 2. Grade Picks (Apply Styles)
     ['afc', 'nfc'].forEach(conf => {
+        // --- WC ROUND ---
         picks[conf].wcWinners.forEach((uPick, i) => {
             if (!uPick) return;
             const uiElement = findTeamElement(conf, 'wc', i, uPick.name);
@@ -313,20 +386,40 @@ function gradeBracket(master) {
             }
         });
 
+        // --- DIV ROUND ---
         picks[conf].divWinners.forEach((uPick, i) => {
             if (!uPick) return;
             const uiElement = findTeamElement(conf, 'div', i, uPick.name);
-            if (deadTeams.has(uPick.name)) uiElement.classList.add('eliminated');
+
+            if (deadTeams.has(uPick.name)) {
+                // ZOMBIE LOGIC: Force Dark Background & Dim Text
+                uiElement.classList.add('eliminated');
+                uiElement.style.setProperty('background-color', '#2a2a2a', 'important'); // Dark Grey
+                uiElement.style.setProperty('border-color', '#444444', 'important');     // Dim Border
+                uiElement.style.setProperty('opacity', '0.5', 'important');              // Fade entire card
+                const nameSpan = uiElement.querySelector('.name');
+                if (nameSpan) nameSpan.style.setProperty('color', '#888888', 'important'); // Dim Text
+            }
             else if (master[conf] && master[conf].divWinners) {
                 if (master[conf].divWinners[i] && master[conf].divWinners[i].name === uPick.name) uiElement.classList.add('correct', 'div');
                 else if (master[conf].divWinners[i]) uiElement.classList.add('incorrect');
             }
         });
 
+        // --- CHAMP ROUND ---
         if (picks[conf].champion) {
             const uPick = picks[conf].champion;
             const uiElement = findTeamElement(conf, 'champ', 0, uPick.name);
-            if (deadTeams.has(uPick.name)) uiElement.classList.add('eliminated');
+
+            if (deadTeams.has(uPick.name)) {
+                // ZOMBIE LOGIC
+                uiElement.classList.add('eliminated');
+                uiElement.style.setProperty('background-color', '#2a2a2a', 'important');
+                uiElement.style.setProperty('border-color', '#444444', 'important');
+                uiElement.style.setProperty('opacity', '0.5', 'important');
+                const nameSpan = uiElement.querySelector('.name');
+                if (nameSpan) nameSpan.style.setProperty('color', '#888888', 'important');
+            }
             else if (master[conf] && master[conf].champion) {
                 if (master[conf].champion.name === uPick.name) uiElement.classList.add('correct', 'champ');
                 else uiElement.classList.add('incorrect');
@@ -334,10 +427,19 @@ function gradeBracket(master) {
         }
     });
 
+    // --- SUPER BOWL ---
     if (picks.superBowlWinner) {
         const uiElement = document.querySelector('#super-bowl-matchup .team.selected');
         if (uiElement) {
-            if (deadTeams.has(picks.superBowlWinner)) uiElement.classList.add('eliminated');
+            if (deadTeams.has(picks.superBowlWinner)) {
+                // ZOMBIE LOGIC
+                uiElement.classList.add('eliminated');
+                uiElement.style.setProperty('background-color', '#2a2a2a', 'important');
+                uiElement.style.setProperty('border-color', '#444444', 'important');
+                uiElement.style.setProperty('opacity', '0.5', 'important');
+                const nameSpan = uiElement.querySelector('.name');
+                if (nameSpan) nameSpan.style.setProperty('color', '#888888', 'important');
+            }
             else if (master.superBowlWinner) {
                 if (master.superBowlWinner === picks.superBowlWinner) uiElement.classList.add('correct', 'sb');
                 else uiElement.classList.add('incorrect');
@@ -346,19 +448,7 @@ function gradeBracket(master) {
     }
 }
 
-// --- MODAL FUNCTIONS (New) ---
-function openScoringModal() {
-    document.getElementById('scoring-modal').style.display = 'block';
-}
-
-function closeScoringModal() {
-    document.getElementById('scoring-modal').style.display = 'none';
-}
-
-// Close modal if user clicks outside the box
 window.onclick = function (event) {
-    const modal = document.getElementById('scoring-modal');
-    if (event.target == modal) {
-        modal.style.display = "none";
-    }
+    if (event.target == document.getElementById('scoring-modal')) closeScoringModal();
+    if (event.target == document.getElementById('leaderboard-modal')) closeLeaderboard();
 }

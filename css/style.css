@@ -664,3 +664,124 @@ body {
     font-weight: bold;
     font-size: 1.3rem;
 }
+
+/* --- LEADERBOARD & SPY STYLES --- */
+.btn-spy {
+    background-color: #9b59b6 !important;
+    /* Purple */
+    color: white !important;
+}
+
+#leaderboard-list {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.leader-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #333;
+}
+
+.leader-row:nth-child(1) {
+    color: var(--accent-gold);
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* First Place */
+
+.leader-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.leader-name {
+    font-weight: bold;
+    color: #fff;
+}
+
+.leader-score {
+    color: #00ff00;
+    font-size: 0.9rem;
+}
+
+.btn-spy-action {
+    background: #444;
+    color: #fff;
+    border: 1px solid #666;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.btn-spy-action:hover {
+    background: #9b59b6;
+    border-color: #9b59b6;
+}
+
+/* SPY BANNER (Top Bar) */
+#spy-banner {
+    display: none;
+    /* Hidden by default */
+    background: #c0392b;
+    /* Dark Red */
+    color: white;
+    padding: 10px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    animation: slideDown 0.3s;
+}
+
+#spy-banner button {
+    background: white;
+    color: #c0392b;
+    border: none;
+    padding: 5px 15px;
+    margin-left: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+/* Hide controls when spying */
+body.spy-mode .user-controls {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+body.spy-mode .header {
+    border-bottom: none;
+}
+
+/* --- COMMUNITY STATS (PERCENTAGE BADGE) --- */
+.stat-badge {
+    font-size: 0.75rem;
+    color: #888;
+    background: #222;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    border: 1px solid #444;
+    font-weight: normal;
+}
+
+/* When selected, make it match the theme */
+.team.selected .stat-badge {
+    color: #333;
+    background: #e0e0e0;
+    border-color: #ccc;
+    font-weight: bold;
+}
+
+/* Adjust right-side alignment */
+.right-side .stat-badge {
+    margin-left: 0;
+    margin-right: 8px;
+}
