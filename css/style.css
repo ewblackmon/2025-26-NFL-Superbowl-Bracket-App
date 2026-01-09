@@ -768,3 +768,22 @@ body.spy-mode .header {
     background: #9b59b6;
     border-color: #9b59b6;
 }
+
+/* --- ZOOM MODE FIXES --- */
+
+/* When zoomed out, remove the big top padding to fit everything on screen */
+.bracket-wrapper.zoomed-out .super-bowl-center {
+    padding-top: 10px !important;
+    /* Shrink gap from 100px to 10px */
+    padding-bottom: 20px !important;
+    /* Remove huge bottom buffer */
+    justify-content: center;
+    /* Center it vertically in the available space */
+}
+
+/* Optional: Ensure the wrapper fills the height so centering works */
+.bracket-wrapper.zoomed-out {
+    align-items: flex-start;
+    /* Keep sides at top, but let center float if needed */
+    height: 100%;
+}
