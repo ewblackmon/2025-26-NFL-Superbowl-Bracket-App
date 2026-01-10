@@ -108,9 +108,26 @@ function getStatBadge(teamName, round) {
 }
 
 // --- UI MODALS ---
-function openScoringModal() { document.getElementById('scoring-modal').style.display = 'block'; }
-function closeScoringModal() { document.getElementById('scoring-modal').style.display = 'none'; }
-function closeLeaderboard() { document.getElementById('leaderboard-modal').style.display = 'none'; }
+
+// RENAMED: was openScoringModal
+function openInfoModal() {
+    document.getElementById('info-modal').style.display = 'block';
+}
+
+// RENAMED: was closeScoringModal
+function closeInfoModal() {
+    document.getElementById('info-modal').style.display = 'none';
+}
+
+function closeLeaderboard() {
+    document.getElementById('leaderboard-modal').style.display = 'none';
+}
+
+// UPDATE WINDOW CLICK LISTENER
+window.onclick = function (event) {
+    if (event.target == document.getElementById('info-modal')) closeInfoModal();
+    if (event.target == document.getElementById('leaderboard-modal')) closeLeaderboard();
+}
 
 function openLeaderboard() {
     document.getElementById('leaderboard-modal').style.display = 'block';
@@ -549,6 +566,6 @@ function gradeBracket(master) {
 }
 
 window.onclick = function (event) {
-    if (event.target == document.getElementById('scoring-modal')) closeScoringModal();
+    if (event.target == document.getElementById('info-modal')) closeInfoModal();
     if (event.target == document.getElementById('leaderboard-modal')) closeLeaderboard();
 }

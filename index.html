@@ -34,9 +34,8 @@
 
                     <button onclick="openLeaderboard()" class="btn-spy">🏆 LEADERS</button>
                     <button onclick="toggleZoom()" class="btn-zoom" id="btn-zoom">🔍 ZOOM OUT</button>
-                    <button onclick="openScoringModal()" class="btn-info">SCORING</button>
-
-                    <button id="reset-btn" class="btn-reset">RESET</button>
+                    <button onclick="openInfoModal()" class="btn-info">HOW TO</button> <button id="reset-btn"
+                        class="btn-reset">RESET</button>
                 </div>
             </div>
             <div id="status-message"></div>
@@ -73,20 +72,43 @@
         </div>
     </div>
 
-    <div id="scoring-modal" class="modal">
+    <div id="info-modal" class="modal">
         <div class="modal-content">
-            <span class="close-btn" onclick="closeScoringModal()">&times;</span>
-            <h2>How Scoring Works</h2>
-            <p style="color: #ccc; font-size: 0.9rem; line-height: 1.4; margin-bottom: 20px;">
-                Points are earned for every correct prediction.
-            </p>
-            <ul>
-                <li><span class="point-badge wc">+2</span> <strong>Wild Card Round</strong></li>
-                <li><span class="point-badge div">+3</span> <strong>Divisional Round</strong></li>
-                <li><span class="point-badge champ">+5</span> <strong>Conference Champ</strong></li>
-                <li><span class="point-badge sb">+10</span> <strong>Super Bowl Winner</strong></li>
-            </ul>
-            <div class="total-score-box">Total Possible: <span>44</span></div>
+            <span class="close-btn" onclick="closeInfoModal()">&times;</span>
+            <h2>App Guide & Rules</h2>
+
+            <div class="guide-section">
+                <h3>💾 Saving & Loading</h3>
+                <p><strong>To Save:</strong> Enter your Name and Email, make your picks, and tap <strong>SAVE</strong>.
+                </p>
+                <p><strong>To Load:</strong> Enter your Email and tap <strong>LOAD</strong> (or press Enter). You can
+                    update your bracket as often as you like before the deadline.</p>
+            </div>
+
+            <div class="guide-section">
+                <h3>🏆 Leaderboard & Spying</h3>
+                <p>Tap <strong>LEADERS</strong> to see the current standings.</p>
+                <p><strong>Spy Mode:</strong> Click "VIEW" next to any player's name to load their bracket and see who
+                    they picked! You cannot make changes to their bracket.</p>
+            </div>
+
+            <div class="guide-section">
+                <h3>🔍 Zooming</h3>
+                <p>Tap <strong>ZOOM OUT</strong> to shrink the bracket and see the entire tournament at once. Tap
+                    <strong>ZOOM IN</strong> to return to normal view for easier reading.</p>
+            </div>
+
+            <div class="guide-section">
+                <h3>📊 Scoring Breakdown</h3>
+                <p>Points are awarded for every correct winning team you predict.</p>
+                <ul>
+                    <li><span class="point-badge wc">+2</span> <strong>Wild Card Round</strong></li>
+                    <li><span class="point-badge div">+3</span> <strong>Divisional Round</strong></li>
+                    <li><span class="point-badge champ">+5</span> <strong>Conference Champ</strong></li>
+                    <li><span class="point-badge sb">+10</span> <strong>Super Bowl Winner</strong></li>
+                </ul>
+                <div class="total-score-box">Total Possible Score: <span>44</span></div>
+            </div>
         </div>
     </div>
 

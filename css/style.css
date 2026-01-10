@@ -787,3 +787,49 @@ body.spy-mode .header {
     /* Keep sides at top, but let center float if needed */
     height: 100%;
 }
+
+/* --- INFO MODAL UPDATES --- */
+.guide-section {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 15px;
+}
+
+.guide-section:last-child {
+    border-bottom: none;
+}
+
+.guide-section h3 {
+    color: var(--accent-gold);
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.guide-section p {
+    color: #ccc;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 5px 0;
+}
+
+/* Ensure modal content scrolls on small screens */
+.modal-content {
+    background-color: #222;
+    margin: 5% auto;
+    /* Less margin so it fits better */
+    padding: 25px;
+    border: 1px solid #444;
+    width: 90%;
+    max-width: 400px;
+    /* Slightly wider for reading text */
+    max-height: 80vh;
+    /* Limit height to 80% of screen */
+    overflow-y: auto;
+    /* Enable scrolling inside the box */
+    color: #fff;
+    border-radius: 12px;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+    animation: slideDown 0.3s ease-out;
+}
