@@ -409,24 +409,19 @@ function resetBracket() {
     refreshAllRounds();
 }
 
-// --- UPDATED SUBMIT BRACKET (Auto-Override for Admin Mode) ---
+// --- UPDATED SUBMIT BRACKET (No Input Box) ---
 function submitBracket() {
     const now = new Date();
     const emailField = document.getElementById('useremail');
     const isMaster = emailField && emailField.value.trim().toLowerCase() === ADMIN_EMAIL;
-
-    // Check if we are in "God Mode"
     const inAdminMode = document.body.classList.contains('admin-mode');
 
     // DEADLINE LOGIC:
-    // Block if: Past Deadline AND Not Master Key AND Not Editing Someone
+    // If it is past the deadline AND you are not the Master Key AND not in Admin Mode...
     if (now > LOCK_DATE && !isMaster && !inAdminMode) {
-        // If locked, ask for permission to override (Manual Backdoor)
-        const override = prompt("⛔ DEADLINE PASSED ⛔\n\nTo force an update for this user, enter the Admin Email:");
-        if (!override || override.trim().toLowerCase() !== ADMIN_EMAIL) {
-            alert("❌ Override Failed: Access Denied.");
-            return;
-        }
+        // Just show a message and STOP. No input box, no override chance.
+        alert("⛔ DEADLINE PASSED ⛔\n\nThis bracket is locked.\n\nPlease contact the administrator to request changes.");
+        return; 
     }
 
     if (document.body.classList.contains('spy-mode')) {
@@ -467,27 +462,6 @@ function submitBracket() {
             console.error(err);
             executeSave(user, email, msg);
         });
-}
-
-function executeSave(user, email, msg) {
-    if (msg) msg.innerText = "Saving...";
-    const payload = { name: user, email: email, picks: picks };
-
-    fetch(scriptURL, {
-        method: 'POST', mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    }).then(() => {
-        if (msg) msg.innerText = "Saved!";
-
-        // If regular user, save email. If Admin editing someone, DON'T overwrite local admin cookie
-        const amIAdmin = document.body.classList.contains('admin-mode');
-        if (!amIAdmin) {
-            localStorage.setItem('nflBracketEmail', email);
-        }
-
-        alert("Bracket Saved Successfully!");
-    });
 }
 
 function loadBracket(spyEmail = null, isSpyMode = false) {
