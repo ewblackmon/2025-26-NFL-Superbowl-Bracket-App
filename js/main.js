@@ -153,15 +153,27 @@ function openLeaderboard() {
 function spyOnUser(email) { closeLeaderboard(); loadBracket(email); }
 
 function exitSpyMode() {
+    // 1. Remove Spy Visuals
     document.body.classList.remove('spy-mode');
     document.getElementById('spy-banner').style.display = 'none';
+
+    // 2. Restore the User's Own Bracket (in the background)
     const currentEmail = document.getElementById('useremail').value;
-    if (currentEmail) { loadBracket(); }
-    else {
-        const savedEmail = localStorage.getItem('nflBracketEmail');
-        if (savedEmail) { document.getElementById('useremail').value = savedEmail; loadBracket(); }
-        else { resetBracket(); }
+    const savedEmail = localStorage.getItem('nflBracketEmail');
+
+    if (currentEmail) {
+        loadBracket();
     }
+    else if (savedEmail) {
+        document.getElementById('useremail').value = savedEmail;
+        loadBracket();
+    }
+    else {
+        resetBracket();
+    }
+
+    // 3. NEW: Immediately re-open the Leaderboard
+    openLeaderboard();
 }
 
 // --- CORE RENDER FUNCTIONS ---
@@ -214,7 +226,12 @@ function generateConferenceRound(conf) {
 
 function renderSuperBowl() {
     const container = document.getElementById('super-bowl-matchup');
+    const champContainer = document.getElementById('champion-display'); // Get the champion box
+
+    // 1. CLEAN SLATE: Wipe everything before checking picks
     container.innerHTML = '';
+    champContainer.innerHTML = '';
+
     if (picks.afc.champion && picks.nfc.champion) {
         const div = document.createElement('div');
         div.className = 'matchup';
@@ -229,12 +246,17 @@ function renderSuperBowl() {
             </div>
         `;
         container.appendChild(div);
-        if (picks.superBowlWinner) displayChampion(picks.superBowlWinner);
+
+        // Only show the champion IF one is actually picked
+        if (picks.superBowlWinner) {
+            displayChampion(picks.superBowlWinner);
+        }
     } else {
         const div = document.createElement('div');
         div.className = 'matchup';
         div.innerHTML = `<div class="team placeholder"><span class="name">NFC Champ</span></div><div class="team placeholder"><span class="name">AFC Champ</span></div>`;
         container.appendChild(div);
+        // Note: champContainer remains empty here because we wiped it at the start
     }
 }
 
