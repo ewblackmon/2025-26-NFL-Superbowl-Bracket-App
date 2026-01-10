@@ -409,7 +409,7 @@ function resetBracket() {
     refreshAllRounds();
 }
 
-// --- UPDATED SUBMIT BRACKET (No Input Box) ---
+// --- UPDATED SUBMIT BRACKET ---
 function submitBracket() {
     const now = new Date();
     const emailField = document.getElementById('useremail');
@@ -417,11 +417,9 @@ function submitBracket() {
     const inAdminMode = document.body.classList.contains('admin-mode');
 
     // DEADLINE LOGIC:
-    // If it is past the deadline AND you are not the Master Key AND not in Admin Mode...
     if (now > LOCK_DATE && !isMaster && !inAdminMode) {
-        // Just show a message and STOP. No input box, no override chance.
         alert("⛔ DEADLINE PASSED ⛔\n\nThis bracket is locked.\n\nPlease contact the administrator to request changes.");
-        return; 
+        return;
     }
 
     if (document.body.classList.contains('spy-mode')) {
@@ -445,11 +443,12 @@ function submitBracket() {
         .then(r => r.json())
         .then(data => {
             if (data.status === "found") {
+                // FIXED TEXT: "OVERWRITES" and "your"
                 const confirmOverwrite = confirm(
                     `⚠️ EXISTING BRACKET FOUND\n\n` +
                     `We found a saved bracket for "${data.name}" under this email.\n\n` +
                     `Do you want to OVERWRITE it with what is currently on your screen?\n\n` +
-                    `• Click OK to Save (This deletes your old bracket)\n` +
+                    `• Click OK to Save (This OVERWRITES your old bracket)\n` +
                     `• Click Cancel to Stop`
                 );
                 if (confirmOverwrite) { executeSave(user, email, msg); }
