@@ -1,6 +1,9 @@
 // --- CONFIGURATION ---
-// 1. PASTE YOUR DEPLOYED GOOGLE SCRIPT URL BETWEEN THE QUOTES BELOW:
 const scriptURL = "https://script.google.com/macros/s/AKfycbyieXUOJqeOh3l4KkrUBYmQkptpsWf-ersSvhFe80sKoUws9fnzAreARW4CrNlpeuKW9Q/exec";
+
+// ⚠️ DEADLINE: January 10, 2026 at 1:30 PM Pacific Standard Time
+const LOCK_DATE = new Date("January 10, 2026 13:30:00 PST");
+const ADMIN_EMAIL = "masterkey@masterkey.com";
 
 // --- DATA ---
 const teamFullNames = {
@@ -36,14 +39,19 @@ let communityStats = {};
 document.addEventListener('DOMContentLoaded', () => {
     refreshAllRounds();
     fetchCommunityStats();
+    checkDeadlineLock(); // Initial check on load
 
     // Reset Button
     const resetBtn = document.getElementById('reset-btn');
     if (resetBtn) resetBtn.addEventListener('click', resetBracket);
 
-    // Press Enter to Load
+    // Email Input Listener (Unlocks button dynamically for Master Key)
     const emailInput = document.getElementById('useremail');
     if (emailInput) {
+        // Unlock logic: Run check every time user types
+        emailInput.addEventListener('input', checkDeadlineLock);
+
+        // Enter key to load
         emailInput.addEventListener('keyup', function (event) {
             if (event.key === 'Enter') {
                 loadBracket();
@@ -51,6 +59,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// --- DEADLINE & LOCK CHECKER ---
+function checkDeadlineLock() {
+    const now = new Date();
+    const saveBtn = document.getElementById('btn-save');
+    const emailField = document.getElementById('useremail');
+
+    // Check if current email is the Admin (Case insensitive)
+    const isMaster = emailField && emailField.value.trim().toLowerCase() === ADMIN_EMAIL;
+
+    // IF time is past deadline AND user is NOT master... LOCK IT.
+    if (now > LOCK_DATE && !isMaster) {
+        if (saveBtn) {
+            saveBtn.innerText = "🔒 LOCKED";
+            saveBtn.style.backgroundColor = "#555";
+            saveBtn.style.cursor = "not-allowed";
+            saveBtn.disabled = true; // Physically disable the button
+        }
+    } else {
+        // UNLOCK IT (Standard State)
+        if (saveBtn) {
+            saveBtn.innerText = "SAVE";
+            saveBtn.style.backgroundColor = ""; // Revert to CSS default (Gold)
+            saveBtn.style.cursor = "pointer";
+            saveBtn.disabled = false; // Re-enable button
+        }
+    }
+}
 
 // --- STATS LOGIC ---
 function fetchCommunityStats() {
@@ -233,19 +269,13 @@ function findTeamElement(conf, round, matchIndex, teamName) {
 function toggleZoom() {
     const bracket = document.getElementById('bracket-area');
     const btn = document.getElementById('btn-zoom');
-
-    // Toggle the class
     bracket.classList.toggle('zoomed-out');
-
-    // Update Button Text
     if (bracket.classList.contains('zoomed-out')) {
-        // We are currently small (Zoomed Out), so the button offers to Zoom In
         btn.innerText = "🔍 ZOOM IN";
         btn.style.backgroundColor = "#555";
     } else {
-        // We are currently normal, so the button offers to Zoom Out
         btn.innerText = "🔍 ZOOM OUT";
-        btn.style.backgroundColor = "#e67e22"; // Orange
+        btn.style.backgroundColor = "#e67e22";
     }
 }
 
@@ -296,7 +326,6 @@ function restoreSelection(conf, round, matchId, teamName) {
             nameSpan.style.setProperty('color', '#000000', 'important');
             nameSpan.style.setProperty('font-weight', '800', 'important');
         }
-        // Force the badge to match theme (dark text)
         const badge = teamDiv.querySelector('.stat-badge');
         if (badge) {
             badge.style.setProperty('background', '#ddd', 'important');
@@ -324,8 +353,19 @@ function resetBracket() {
     refreshAllRounds();
 }
 
-// --- SUBMIT BRACKET (SAFEGUARDED) ---
+// --- SUBMIT BRACKET (SAFEGUARDED & LOCKED) ---
 function submitBracket() {
+    // 1. DEADLINE CHECK (With Admin Exception)
+    const now = new Date();
+    const emailField = document.getElementById('useremail');
+    const isMaster = emailField && emailField.value.trim().toLowerCase() === ADMIN_EMAIL;
+
+    // Only block if deadline passed AND user is NOT master
+    if (now > LOCK_DATE && !isMaster) {
+        alert("❌ DEADLINE PASSED\n\nPredictions are locked! The first game has started.");
+        return;
+    }
+
     if (document.body.classList.contains('spy-mode')) {
         alert("You are spying! Exit spy mode to save your own bracket.");
         return;
@@ -396,7 +436,6 @@ function loadBracket(spyEmail = null) {
             if (data.status === "found") {
                 picks = data.picks;
 
-                // Handle Spy Mode UI
                 if (isSpying) {
                     document.body.classList.add('spy-mode');
                     document.getElementById('spy-banner').style.display = 'block';
@@ -405,7 +444,6 @@ function loadBracket(spyEmail = null) {
                     document.getElementById('username').value = data.name;
                 }
 
-                // Show Score if available
                 if (data.score !== undefined) {
                     document.getElementById('user-score-display').style.display = 'block';
                     document.getElementById('score-value').innerText = data.score;
@@ -413,8 +451,9 @@ function loadBracket(spyEmail = null) {
 
                 refreshAllRounds();
                 restoreUIFromPicks();
+                // Manually trigger lock check after load (in case email changed)
+                checkDeadlineLock();
 
-                // FIX: Show "Loaded!" then clear it after 2 seconds
                 if (msg && !isSpying) {
                     msg.innerText = "Loaded!";
                     setTimeout(() => {
@@ -445,7 +484,6 @@ function gradeBracket(master) {
     });
 
     ['afc', 'nfc'].forEach(conf => {
-        // WC Round
         picks[conf].wcWinners.forEach((uPick, i) => {
             if (!uPick) return;
             const uiElement = findTeamElement(conf, 'wc', i, uPick.name);
@@ -456,12 +494,10 @@ function gradeBracket(master) {
             }
         });
 
-        // Div Round
         picks[conf].divWinners.forEach((uPick, i) => {
             if (!uPick) return;
             const uiElement = findTeamElement(conf, 'div', i, uPick.name);
             if (deadTeams.has(uPick.name)) {
-                // ZOMBIE LOGIC
                 uiElement.classList.add('eliminated');
                 uiElement.style.setProperty('background-color', '#2a2a2a', 'important');
                 uiElement.style.setProperty('border-color', '#444444', 'important');
@@ -475,12 +511,10 @@ function gradeBracket(master) {
             }
         });
 
-        // Champ Round
         if (picks[conf].champion) {
             const uPick = picks[conf].champion;
             const uiElement = findTeamElement(conf, 'champ', 0, uPick.name);
             if (deadTeams.has(uPick.name)) {
-                // ZOMBIE LOGIC
                 uiElement.classList.add('eliminated');
                 uiElement.style.setProperty('background-color', '#2a2a2a', 'important');
                 uiElement.style.setProperty('border-color', '#444444', 'important');
@@ -499,7 +533,6 @@ function gradeBracket(master) {
         const uiElement = document.querySelector('#super-bowl-matchup .team.selected');
         if (uiElement) {
             if (deadTeams.has(picks.superBowlWinner)) {
-                // ZOMBIE LOGIC
                 uiElement.classList.add('eliminated');
                 uiElement.style.setProperty('background-color', '#2a2a2a', 'important');
                 uiElement.style.setProperty('border-color', '#444444', 'important');
