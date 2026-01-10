@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- DEADLINE & LOCK CHECKER ---
+// --- DEADLINE CHECKER ---
 function checkDeadlineLock() {
     const now = new Date();
     const saveBtn = document.getElementById('btn-save');
@@ -68,11 +68,10 @@ function checkDeadlineLock() {
         if (saveBtn) {
             saveBtn.innerText = "🔒 LOCKED";
             saveBtn.style.backgroundColor = "#555";
-            saveBtn.style.cursor = "pointer"; // Allow clicking to trigger manual override prompt
+            saveBtn.style.cursor = "pointer";
             saveBtn.disabled = false;
         }
     } else {
-        // UNLOCK IT
         if (saveBtn) {
             saveBtn.innerText = "SAVE";
             saveBtn.style.backgroundColor = "";
@@ -106,13 +105,12 @@ function openInfoModal() { document.getElementById('info-modal').style.display =
 function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
 function closeLeaderboard() { document.getElementById('leaderboard-modal').style.display = 'none'; }
 
-// --- UPDATED OPEN LEADERBOARD (Detects Admin) ---
+// --- LEADERBOARD & ADMIN ---
 function openLeaderboard() {
     document.getElementById('leaderboard-modal').style.display = 'block';
     const list = document.getElementById('leaderboard-list');
     list.innerHTML = '<div style="text-align:center; padding:20px;">Loading Scores...</div>';
 
-    // CHECK: Are you the Master Key?
     const currentEmail = document.getElementById('useremail').value.trim().toLowerCase();
     const amIAdmin = (currentEmail === ADMIN_EMAIL);
 
@@ -123,7 +121,6 @@ function openLeaderboard() {
                 list.innerHTML = '';
                 if (data.leaderboard.length === 0) { list.innerHTML = '<div style="padding:10px;">No brackets saved yet.</div>'; return; }
 
-                // If Admin, add a header
                 if (amIAdmin) {
                     const header = document.createElement('div');
                     header.innerHTML = `<div style="background:#c0392b; color:white; padding:5px; text-align:center; margin-bottom:10px; font-weight:bold; border-radius:4px;">🛠️ ADMIN CONSOLE ACTIVE</div>`;
@@ -134,7 +131,6 @@ function openLeaderboard() {
                     const row = document.createElement('div');
                     row.className = 'leader-row';
 
-                    // Button Logic: Admin gets "EDIT", User gets "VIEW"
                     let actionButton = '';
                     if (amIAdmin) {
                         actionButton = `<button class="btn-spy-action" style="background:#e74c3c; border-color:#c0392b;" onclick="editUser('${player.email}')">✏️ EDIT</button>`;
@@ -149,17 +145,15 @@ function openLeaderboard() {
         });
 }
 
-// --- SPY MODE (Read Only) ---
 function spyOnUser(email) {
     closeLeaderboard();
-    loadBracket(email, true); // true = spy mode
+    loadBracket(email, true);
 }
 
 function exitSpyMode() {
     document.body.classList.remove('spy-mode');
     document.getElementById('spy-banner').style.display = 'none';
 
-    // Restore User
     const currentEmail = document.getElementById('useremail').value;
     const savedEmail = localStorage.getItem('nflBracketEmail');
 
@@ -170,20 +164,18 @@ function exitSpyMode() {
     }
     else { resetBracket(); }
 
-    openLeaderboard(); // Return to list
+    openLeaderboard();
 }
 
-// --- ADMIN EDIT MODE (Full Access) ---
 function editUser(email) {
     closeLeaderboard();
-    document.getElementById('useremail').value = email; // Set target email
-    loadBracket(null); // Load normally (NOT spy mode)
+    document.getElementById('useremail').value = email;
+    loadBracket(null);
 
-    // Visuals
     document.body.classList.add('admin-mode');
     const banner = document.getElementById('spy-banner');
     banner.style.display = 'block';
-    banner.style.background = '#e74c3c'; // Danger Red
+    banner.style.background = '#e74c3c';
     banner.innerHTML = `<span>🛠️ EDITING: <strong id="spy-target-name">${email}</strong></span> <button onclick="exitEditMode()" style="color:#e74c3c;">DONE</button>`;
 }
 
@@ -191,11 +183,10 @@ function exitEditMode() {
     document.body.classList.remove('admin-mode');
     document.getElementById('spy-banner').style.display = 'none';
 
-    // Restore Master Key
     document.getElementById('useremail').value = ADMIN_EMAIL;
-    loadBracket(); // Reload Master Key bracket
+    loadBracket();
 
-    openLeaderboard(); // Return to list
+    openLeaderboard();
 }
 
 // --- CORE RENDER FUNCTIONS ---
@@ -250,7 +241,6 @@ function renderSuperBowl() {
     const container = document.getElementById('super-bowl-matchup');
     const champContainer = document.getElementById('champion-display');
 
-    // CLEAN SLATE
     container.innerHTML = '';
     champContainer.innerHTML = '';
 
@@ -409,14 +399,14 @@ function resetBracket() {
     refreshAllRounds();
 }
 
-// --- UPDATED SUBMIT BRACKET ---
+// --- UPDATED SUBMIT BRACKET (BYPASS CONFIRM FOR ADMIN) ---
 function submitBracket() {
     const now = new Date();
     const emailField = document.getElementById('useremail');
     const isMaster = emailField && emailField.value.trim().toLowerCase() === ADMIN_EMAIL;
     const inAdminMode = document.body.classList.contains('admin-mode');
 
-    // DEADLINE LOGIC:
+    // DEADLINE LOGIC
     if (now > LOCK_DATE && !isMaster && !inAdminMode) {
         alert("⛔ DEADLINE PASSED ⛔\n\nThis bracket is locked.\n\nPlease contact the administrator to request changes.");
         return;
@@ -438,36 +428,73 @@ function submitBracket() {
 
     if (msg) msg.innerText = "Checking for existing bracket...";
 
-    // BACKGROUND CHECK
+    // CHECK FOR EXISTING
     fetch(`${scriptURL}?email=${encodeURIComponent(email)}`)
         .then(r => r.json())
         .then(data => {
             if (data.status === "found") {
-                // FIXED TEXT: "OVERWRITES" and "your"
-                const confirmOverwrite = confirm(
-                    `⚠️ EXISTING BRACKET FOUND\n\n` +
-                    `We found a saved bracket for "${data.name}" under this email.\n\n` +
-                    `Do you want to OVERWRITE it with what is currently on your screen?\n\n` +
-                    `• Click OK to Save (This OVERWRITES your old bracket)\n` +
-                    `• Click Cancel to Stop`
-                );
-                if (confirmOverwrite) { executeSave(user, email, msg); }
-                else { if (msg) msg.innerText = "Save Cancelled."; }
+                // BYPASS CHECK: IF ADMIN MODE, SAVE IMMEDIATELY (NO CONFIRMATION)
+                if (inAdminMode) {
+                    runActualSave(user, email, msg);
+                }
+                else {
+                    // REGULAR USER: SHOW CONFIRMATION
+                    const confirmOverwrite = confirm(
+                        `⚠️ EXISTING BRACKET FOUND\n\n` +
+                        `We found a saved bracket for "${data.name}" under this email.\n\n` +
+                        `Do you want to OVERWRITE it with what is currently on your screen?\n\n` +
+                        `• Click OK to Save (This OVERWRITES your old bracket)\n` +
+                        `• Click Cancel to Stop`
+                    );
+
+                    if (confirmOverwrite) {
+                        runActualSave(user, email, msg);
+                    } else {
+                        if (msg) msg.innerText = "Save Cancelled.";
+                    }
+                }
             } else {
-                executeSave(user, email, msg);
+                // No bracket found, save immediately
+                runActualSave(user, email, msg);
             }
         })
         .catch(err => {
             console.error(err);
-            executeSave(user, email, msg);
+            // If check fails, try saving anyway
+            runActualSave(user, email, msg);
         });
+}
+
+// INTERNAL SAVE FUNCTION
+function runActualSave(user, email, msg) {
+    if (msg) msg.innerText = "Saving...";
+
+    const payload = { name: user, email: email, picks: picks };
+
+    fetch(scriptURL, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }).then(() => {
+        if (msg) msg.innerText = "Saved!";
+
+        // Update local storage unless Admin Mode
+        const amIAdmin = document.body.classList.contains('admin-mode');
+        if (!amIAdmin) {
+            localStorage.setItem('nflBracketEmail', email);
+        }
+
+        alert("Bracket Saved Successfully!");
+    }).catch(e => {
+        alert("Error saving: " + e);
+        if (msg) msg.innerText = "Error.";
+    });
 }
 
 function loadBracket(spyEmail = null, isSpyMode = false) {
     let email = spyEmail || document.getElementById('useremail').value || localStorage.getItem('nflBracketEmail');
     if (!email) { alert("Enter email."); return; }
 
-    // If I am NOT explicitly spying (meaning I am User, or Admin Editing), set the input box
     if (!isSpyMode) document.getElementById('useremail').value = email;
 
     const msg = document.getElementById('status-message');
@@ -479,11 +506,10 @@ function loadBracket(spyEmail = null, isSpyMode = false) {
             if (data.status === "found") {
                 picks = data.picks;
 
-                // Handle SPY Mode Visuals
                 if (isSpyMode) {
                     document.body.classList.add('spy-mode');
                     document.getElementById('spy-banner').style.display = 'block';
-                    document.getElementById('spy-banner').style.background = '#c0392b'; // Normal Red
+                    document.getElementById('spy-banner').style.background = '#c0392b';
                     document.getElementById('spy-target-name').innerText = data.name.toUpperCase();
                     document.getElementById('spy-banner').innerHTML = `<span>👁️ SPYING ON: <strong id="spy-target-name">${data.name.toUpperCase()}</strong></span> <button onclick="exitSpyMode()">EXIT VIEW</button>`;
                 } else {
@@ -497,8 +523,6 @@ function loadBracket(spyEmail = null, isSpyMode = false) {
 
                 refreshAllRounds();
                 restoreUIFromPicks();
-
-                // IMPORTANT: Check lock status after loading (unless in Admin Mode)
                 checkDeadlineLock();
 
                 if (msg && !isSpyMode) {
