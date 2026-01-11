@@ -575,3 +575,14 @@ body {
     background: #9b59b6;
     border-color: #9b59b6;
 }
+
+.champ-label {
+    color: #ccc;
+    /* Light gray/white to stand out */
+    font-size: 0.9rem;
+    /* Slightly smaller than the team name */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
