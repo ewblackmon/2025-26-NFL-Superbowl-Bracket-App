@@ -1,3 +1,5 @@
+let leaderboardCache = []; // Stores the list for Next/Prev navigation
+
 // --- CONFIGURATION ---
 const scriptURL = "https://script.google.com/macros/s/AKfycbyieXUOJqeOh3l4KkrUBYmQkptpsWf-ersSvhFe80sKoUws9fnzAreARW4CrNlpeuKW9Q/exec";
 
@@ -118,6 +120,8 @@ function openLeaderboard() {
         .then(r => r.json())
         .then(data => {
             if (data.status === 'success') {
+                leaderboardCache = data.leaderboard; // <--- SAVE TO CACHE
+
                 list.innerHTML = '';
                 if (data.leaderboard.length === 0) { list.innerHTML = '<div style="padding:10px;">No brackets saved yet.</div>'; return; }
 
@@ -131,9 +135,8 @@ function openLeaderboard() {
                     const row = document.createElement('div');
                     row.className = 'leader-row';
 
-                    // Highlight the current user
                     if (player.email.toLowerCase() === currentEmail) {
-                        row.style.backgroundColor = "#333300"; // Dark Gold highlight
+                        row.style.backgroundColor = "#333300";
                         row.style.border = "1px solid #FFD700";
                     }
 
@@ -144,8 +147,6 @@ function openLeaderboard() {
                         actionButton = `<button class="btn-spy-action" onclick="spyOnUser('${player.email}')">VIEW</button>`;
                     }
 
-                    // NEW LAYOUT: Rank | Name | Score | Button
-                    // We use player.displayRank which comes from the Google Script (e.g. "1st", "3rd (Tied)")
                     row.innerHTML = `
                         <div class="leader-rank">${player.displayRank || '-'}</div>
                         <div class="leader-info">
@@ -158,6 +159,41 @@ function openLeaderboard() {
                 });
             } else { list.innerHTML = 'Error loading leaderboard.'; }
         });
+}
+
+// Ensure we have the list for navigation
+function ensureLeaderboardData() {
+    if (leaderboardCache && leaderboardCache.length > 0) return Promise.resolve(leaderboardCache);
+    return fetch(`${scriptURL}?cmd=leaderboard`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                leaderboardCache = data.leaderboard;
+                return leaderboardCache;
+            }
+            return [];
+        });
+}
+
+// Handle Next/Prev Clicks
+function navigateBracket(offset) {
+    const currentEmail = document.getElementById('useremail').value.trim().toLowerCase();
+    const isAdminMode = document.body.classList.contains('admin-mode');
+
+    ensureLeaderboardData().then(list => {
+        const currentIndex = list.findIndex(p => p.email.toLowerCase() === currentEmail);
+        if (currentIndex === -1) return; // Should not happen
+
+        const newIndex = currentIndex + offset;
+        if (newIndex >= 0 && newIndex < list.length) {
+            const nextPlayer = list[newIndex];
+            if (isAdminMode) {
+                editUser(nextPlayer.email);
+            } else {
+                spyOnUser(nextPlayer.email);
+            }
+        }
+    });
 }
 
 function spyOnUser(email) {
@@ -191,14 +227,9 @@ function exitSpyMode() {
 
 function editUser(email) {
     closeLeaderboard();
+    document.body.classList.add('admin-mode'); // Set Mode FIRST
     document.getElementById('useremail').value = email;
-    loadBracket(null);
-
-    document.body.classList.add('admin-mode');
-    const banner = document.getElementById('spy-banner');
-    banner.style.display = 'block';
-    banner.style.background = '#e74c3c';
-    banner.innerHTML = `<span>🛠️ EDITING: <strong id="spy-target-name">${email}</strong></span> <button onclick="exitEditMode()" style="color:#e74c3c;">DONE</button>`;
+    loadBracket(null); // LoadBracket will handle the banner now
 }
 
 function exitEditMode() {
@@ -517,8 +548,6 @@ function loadBracket(spyEmail = null, isSpyMode = false) {
     let email = spyEmail || document.getElementById('useremail').value || localStorage.getItem('nflBracketEmail');
     if (!email) { alert("Enter email."); return; }
 
-    // Only set the email field upfront if we are NOT spying. 
-    // If spying, we wait until data is found to populate it safely.
     if (!isSpyMode) document.getElementById('useremail').value = email;
 
     const msg = document.getElementById('status-message');
@@ -530,33 +559,51 @@ function loadBracket(spyEmail = null, isSpyMode = false) {
             if (data.status === "found") {
                 picks = data.picks;
 
-                // Always populate the Name field (for both Spy Mode and Normal Mode)
+                // Always populate Name
                 document.getElementById('username').value = data.name;
 
-                if (isSpyMode) {
-                    document.body.classList.add('spy-mode');
-                    const banner = document.getElementById('spy-banner');
-                    banner.style.display = 'block';
-                    banner.style.background = '#c0392b';
-                    banner.innerHTML = `<span>👁️ SPYING ON: <strong>${data.name.toUpperCase()}</strong></span> <button onclick="exitSpyMode()">EXIT VIEW</button>`;
+                // --- SPY / ADMIN BANNER LOGIC ---
+                const banner = document.getElementById('spy-banner');
+                const isAdmin = document.body.classList.contains('admin-mode');
 
-                    // --- SPY MODE INPUT FIELD LOGIC ---
-                    // 1. If looking at Master Key, HIDE the email address
-                    if (data.email.toLowerCase() === ADMIN_EMAIL) {
+                if (isSpyMode || isAdmin) {
+                    if (isSpyMode) document.body.classList.add('spy-mode');
+
+                    banner.style.display = 'flex'; // Use Flexbox
+                    banner.style.background = isAdmin ? '#c0392b' : '#333'; // Red for Admin, Dark for Spy
+
+                    // Input Field Logic
+                    if (data.email.toLowerCase() === ADMIN_EMAIL && isSpyMode) {
                         document.getElementById('useremail').value = "";
                         document.getElementById('useremail').placeholder = "(Hidden)";
-                    }
-                    // 2. Otherwise, show the spied user's email
-                    else {
+                    } else {
                         document.getElementById('useremail').value = data.email;
                     }
 
+                    // Build Banner with Navigation
+                    ensureLeaderboardData().then(list => {
+                        const idx = list.findIndex(p => p.email.toLowerCase() === data.email.toLowerCase());
+                        const prevDisabled = (idx <= 0) ? 'disabled' : '';
+                        const nextDisabled = (idx === -1 || idx >= list.length - 1) ? 'disabled' : '';
+                        const labelText = isAdmin ? "EDITING:" : "SPYING ON:";
+                        const exitAction = isAdmin ? "exitEditMode" : "exitSpyMode";
+                        const exitLabel = isAdmin ? "DONE" : "EXIT";
+
+                        banner.innerHTML = `
+                            <button class="nav-btn" onclick="navigateBracket(-1)" ${prevDisabled}>❮</button>
+                            <div class="banner-content">
+                                <span>${labelText}</span>
+                                <strong id="spy-target-name">${data.name.toUpperCase()}</strong>
+                            </div>
+                            <button class="nav-btn" onclick="navigateBracket(1)" ${nextDisabled}>❯</button>
+                            <button class="btn-exit-spy" onclick="${exitAction}()">${exitLabel}</button>
+                        `;
+                    });
                 } else {
-                    // Normal mode: Ensure the placeholder is reset
                     document.getElementById('useremail').placeholder = "Email";
                 }
 
-                // --- NEW SCORE DISPLAY WITH RANK ---
+                // --- SCORE DISPLAY ---
                 if (data.score !== undefined) {
                     const scoreDisplay = document.getElementById('user-score-display');
                     scoreDisplay.style.display = 'block';
@@ -566,6 +613,7 @@ function loadBracket(spyEmail = null, isSpyMode = false) {
                         .then(r => r.json())
                         .then(lbData => {
                             if (lbData.status === 'success') {
+                                leaderboardCache = lbData.leaderboard; // Cache here too
                                 const myEntry = lbData.leaderboard.find(p => p.email.toLowerCase() === email.toLowerCase());
                                 if (myEntry) {
                                     scoreDisplay.innerHTML = `Current Score: <span id="score-value">${data.score}</span> <span style="color:#888">|</span> <span style="color:#FFD700">${myEntry.displayRank} Place</span>`;
