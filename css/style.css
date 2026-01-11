@@ -510,13 +510,25 @@ body {
 .leader-row {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: flex-start;
+    /* Align everything to the left */
     align-items: center;
     padding: 10px;
     border-bottom: 1px solid #333;
     width: 100%;
     box-sizing: border-box;
-    /* Ensures padding doesn't expand width */
+}
+
+/* Add this new rule for the Rank Number */
+.leader-rank {
+    width: 40px;
+    /* Fixed width for rank */
+    font-weight: bold;
+    color: var(--accent-gold);
+    font-size: 0.9rem;
+    text-align: center;
+    margin-right: 10px;
+    flex-shrink: 0;
 }
 
 .leader-info {

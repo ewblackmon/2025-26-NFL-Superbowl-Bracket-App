@@ -127,9 +127,15 @@ function openLeaderboard() {
                     list.appendChild(header);
                 }
 
-                data.leaderboard.forEach((player, index) => {
+                data.leaderboard.forEach((player) => {
                     const row = document.createElement('div');
                     row.className = 'leader-row';
+
+                    // Highlight the current user
+                    if (player.email.toLowerCase() === currentEmail) {
+                        row.style.backgroundColor = "#333300"; // Dark Gold highlight
+                        row.style.border = "1px solid #FFD700";
+                    }
 
                     let actionButton = '';
                     if (amIAdmin) {
@@ -138,7 +144,16 @@ function openLeaderboard() {
                         actionButton = `<button class="btn-spy-action" onclick="spyOnUser('${player.email}')">VIEW</button>`;
                     }
 
-                    row.innerHTML = `<div class="leader-info"><span class="leader-name">${index + 1}. ${player.name}</span><span class="leader-score">${player.score} Pts</span></div>${actionButton}`;
+                    // NEW LAYOUT: Rank | Name | Score | Button
+                    // We use player.displayRank which comes from the Google Script (e.g. "1st", "3rd (Tied)")
+                    row.innerHTML = `
+                        <div class="leader-rank">${player.displayRank || '-'}</div>
+                        <div class="leader-info">
+                            <span class="leader-name">${player.name}</span>
+                            <span class="leader-score">${player.score} Pts</span>
+                        </div>
+                        ${actionButton}
+                    `;
                     list.appendChild(row);
                 });
             } else { list.innerHTML = 'Error loading leaderboard.'; }
@@ -516,9 +531,25 @@ function loadBracket(spyEmail = null, isSpyMode = false) {
                     document.getElementById('username').value = data.name;
                 }
 
+                // --- NEW SCORE DISPLAY WITH RANK ---
                 if (data.score !== undefined) {
-                    document.getElementById('user-score-display').style.display = 'block';
-                    document.getElementById('score-value').innerText = data.score;
+                    const scoreDisplay = document.getElementById('user-score-display');
+                    scoreDisplay.style.display = 'block';
+
+                    // Show score immediately
+                    scoreDisplay.innerHTML = `Current Score: <span id="score-value">${data.score}</span>`;
+
+                    // Fetch rank in background
+                    fetch(`${scriptURL}?cmd=leaderboard`)
+                        .then(r => r.json())
+                        .then(lbData => {
+                            if (lbData.status === 'success') {
+                                const myEntry = lbData.leaderboard.find(p => p.email.toLowerCase() === email.toLowerCase());
+                                if (myEntry) {
+                                    scoreDisplay.innerHTML = `Current Score: <span id="score-value">${data.score}</span> <span style="color:#888">|</span> <span style="color:#FFD700">${myEntry.displayRank} Place</span>`;
+                                }
+                            }
+                        });
                 }
 
                 refreshAllRounds();
