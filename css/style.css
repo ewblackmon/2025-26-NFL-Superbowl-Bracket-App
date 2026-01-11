@@ -185,7 +185,6 @@ button:disabled {
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
-    /* Essential for badges */
     min-height: 50px;
 }
 
@@ -247,11 +246,10 @@ button:disabled {
     overflow: hidden;
     text-overflow: ellipsis;
     flex-grow: 1;
-    padding-right: 25px;
-    /* Room for badges */
 }
 
-/* --- SUPER BOWL AREA (Center Column) --- */
+/* --- SUPER BOWL AREA --- */
+/* Restored to simple flexbox centering */
 #super-bowl-area {
     display: flex;
     flex-direction: column;
@@ -261,23 +259,11 @@ button:disabled {
     width: 220px;
 }
 
-/* FIX: Constrains the logo size */
+/* Basic constraint for the logo */
 #super-bowl-area img {
-    max-width: 140px !important;
-    width: 100% !important;
-    height: auto !important;
-    max-height: 140px !important;
-    object-fit: contain !important;
-    margin: 10px auto !important;
-    display: block !important;
-}
-
-/* Fixes overlap on the "SUPER BOWLLX" text */
-#super-bowl-area h3,
-.champ-label {
-    margin-top: 15px !important;
-    font-size: 1rem !important;
-    white-space: nowrap;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
 }
 
 #champion-display {
@@ -319,80 +305,30 @@ button:disabled {
     }
 }
 
-/* --- BADGES (Points & Percentages) --- */
-
-/* 1. Community Stats Badge (Bottom Right) */
+/* --- ORIGINAL BADGES (Simple) --- */
 .stat-badge {
-    position: absolute !important;
-    bottom: 2px !important;
-    right: 5px !important;
-    top: auto !important;
-    font-size: 0.65rem !important;
-    padding: 1px 4px;
-    background-color: rgba(0, 0, 0, 0.6);
-    border-radius: 3px;
-    color: #ddd;
-    z-index: 9;
-    pointer-events: none;
+    margin-left: auto;
+    font-size: 0.75rem;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 2px 5px;
+    border-radius: 4px;
+    color: #aaa;
 }
 
-.team.selected .stat-badge {
-    background: #ddd !important;
-    color: #333 !important;
-    border: 1px solid #ccc;
+/* Restored simple Checkmark / X logic */
+.team.correct::after {
+    content: '✓';
+    color: var(--success-green);
+    margin-left: 5px;
     font-weight: bold;
 }
 
-/* 2. Point Badges (Top Right) */
-/* This combines the Checkmark AND the Points into one Green Badge */
-.team.correct::after,
-.team.incorrect::after,
-.team.eliminated::after {
-    position: absolute !important;
-    top: 2px !important;
-    right: 5px !important;
-    font-size: 0.75rem;
-    font-weight: 900;
-    z-index: 10;
-    padding: 2px 6px;
-    border-radius: 4px;
-    color: white;
-    box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-    white-space: nowrap;
-}
-
-/* INCORRECT (Red X) */
 .team.incorrect::after,
 .team.eliminated::after {
     content: '✗';
-    background-color: var(--danger-red);
-}
-
-/* CORRECT - Wild Card (+2) -> GREEN */
-.team.correct.wc::after {
-    content: '✓ +2';
-    background-color: var(--success-green);
-}
-
-/* CORRECT - Divisional (+3) -> GREEN */
-.team.correct.div::after {
-    content: '✓ +3';
-    background-color: var(--success-green);
-}
-
-/* CORRECT - Conference Champ (+5) -> GREEN */
-.team.correct.champ::after {
-    content: '✓ +5';
-    background-color: var(--success-green);
-}
-
-/* CORRECT - Super Bowl (+10) -> GOLD */
-.team.correct.sb::after {
-    content: '✓ +10';
-    background-color: var(--primary-gold);
-    color: black;
-    text-shadow: none;
-    border: 1px solid white;
+    color: var(--danger-red);
+    margin-left: 5px;
+    font-weight: bold;
 }
 
 /* --- MODALS --- */
