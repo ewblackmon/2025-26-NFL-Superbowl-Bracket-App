@@ -474,13 +474,22 @@ body {
 
 .modal-content {
     background-color: #222;
-    margin: 15% auto;
+    margin: 10% auto;
+    /* Slightly raised to give more room */
     padding: 25px;
     border: 1px solid #444;
     width: 90%;
     max-width: 350px;
     color: #fff;
     border-radius: 12px;
+
+    /* --- SCROLL FIX --- */
+    max-height: 80vh;
+    /* Limit height to 80% of viewport */
+    overflow-y: auto;
+    /* Allow vertical scrolling */
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scroll on iPhone */
 }
 
 .close-btn {
