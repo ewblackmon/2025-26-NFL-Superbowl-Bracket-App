@@ -290,7 +290,6 @@ body {
 #super-bowl-area,
 .super-bowl-center {
     flex: 0 0 200px !important;
-    /* Widen to 200px to allow logo/text room */
     width: 200px !important;
     max-width: 200px !important;
 
@@ -302,22 +301,20 @@ body {
     padding-top: 60px;
     padding-bottom: 20px;
 
-    /* CRITICAL FIX: Allow content to be seen even if slightly oversize */
     overflow: visible !important;
 }
 
-/* --- NFL SHIELD FIX (Smart Selector) --- */
-/* Target any image in the center that is NOT a small team logo */
+/* --- NFL SHIELD CENTERED --- */
+/* Added margin: 0 auto to force horizontal centering */
 #super-bowl-area img:not(.team-logo),
 .super-bowl-center img:not(.team-logo) {
     width: 135px !important;
-    /* The requested size */
     max-width: 100% !important;
     height: auto !important;
     display: block;
-    margin-bottom: 15px;
+    margin: 0 auto 15px auto !important;
+    /* CENTERED HERE */
     flex: 0 0 auto !important;
-    /* Prevent flexbox resizing */
     object-fit: contain !important;
 }
 
@@ -346,7 +343,6 @@ body {
     text-transform: uppercase;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     width: 100%;
-    /* Ensure it centers in the 200px container */
 }
 
 
@@ -492,4 +488,13 @@ body {
     font-size: 28px;
     cursor: pointer;
     color: #aaa;
+}
+
+/* --- SAFETY NET: FORCE TEAM LOGOS IN CENTER TO STAY SMALL --- */
+#super-bowl-area .team-logo,
+.super-bowl-center .team-logo {
+    width: 24px !important;
+    height: 24px !important;
+    flex: 0 0 24px !important;
+    margin: 0 8px !important;
 }
