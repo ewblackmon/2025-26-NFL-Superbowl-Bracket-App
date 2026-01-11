@@ -1,5 +1,5 @@
-// Change v1 to v2 (or v2 to v3, etc.)
-const CACHE_NAME = 'nfl-bracket-v2';
+// Change to the next version number (e.g., v3)
+const CACHE_NAME = 'nfl-bracket-v3';
 const ASSETS = [
     './',                 // Relative path for root
     './index.html',       // Relative path

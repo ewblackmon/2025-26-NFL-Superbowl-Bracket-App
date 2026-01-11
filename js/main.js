@@ -169,15 +169,22 @@ function exitSpyMode() {
     document.body.classList.remove('spy-mode');
     document.getElementById('spy-banner').style.display = 'none';
 
-    const currentEmail = document.getElementById('useremail').value;
+    // Reset placeholder in case it was hidden
+    document.getElementById('useremail').placeholder = "Email";
+
+    // 1. Retrieve the original user's email from storage
     const savedEmail = localStorage.getItem('nflBracketEmail');
 
-    if (currentEmail) { loadBracket(); }
-    else if (savedEmail) {
+    // 2. Restore and Reload
+    if (savedEmail) {
         document.getElementById('useremail').value = savedEmail;
-        loadBracket();
+        loadBracket(); // This will auto-fetch your Name and fill that box too
+    } else {
+        // Fallback: If no user was saved, clear everything
+        document.getElementById('useremail').value = "";
+        document.getElementById('username').value = "";
+        resetBracket();
     }
-    else { resetBracket(); }
 
     openLeaderboard();
 }
@@ -510,6 +517,8 @@ function loadBracket(spyEmail = null, isSpyMode = false) {
     let email = spyEmail || document.getElementById('useremail').value || localStorage.getItem('nflBracketEmail');
     if (!email) { alert("Enter email."); return; }
 
+    // Only set the email field upfront if we are NOT spying. 
+    // If spying, we wait until data is found to populate it safely.
     if (!isSpyMode) document.getElementById('useremail').value = email;
 
     const msg = document.getElementById('status-message');
@@ -521,25 +530,38 @@ function loadBracket(spyEmail = null, isSpyMode = false) {
             if (data.status === "found") {
                 picks = data.picks;
 
+                // Always populate the Name field (for both Spy Mode and Normal Mode)
+                document.getElementById('username').value = data.name;
+
                 if (isSpyMode) {
                     document.body.classList.add('spy-mode');
-                    document.getElementById('spy-banner').style.display = 'block';
-                    document.getElementById('spy-banner').style.background = '#c0392b';
-                    document.getElementById('spy-target-name').innerText = data.name.toUpperCase();
-                    document.getElementById('spy-banner').innerHTML = `<span>👁️ SPYING ON: <strong id="spy-target-name">${data.name.toUpperCase()}</strong></span> <button onclick="exitSpyMode()">EXIT VIEW</button>`;
+                    const banner = document.getElementById('spy-banner');
+                    banner.style.display = 'block';
+                    banner.style.background = '#c0392b';
+                    banner.innerHTML = `<span>👁️ SPYING ON: <strong>${data.name.toUpperCase()}</strong></span> <button onclick="exitSpyMode()">EXIT VIEW</button>`;
+
+                    // --- SPY MODE INPUT FIELD LOGIC ---
+                    // 1. If looking at Master Key, HIDE the email address
+                    if (data.email.toLowerCase() === ADMIN_EMAIL) {
+                        document.getElementById('useremail').value = "";
+                        document.getElementById('useremail').placeholder = "(Hidden)";
+                    }
+                    // 2. Otherwise, show the spied user's email
+                    else {
+                        document.getElementById('useremail').value = data.email;
+                    }
+
                 } else {
-                    document.getElementById('username').value = data.name;
+                    // Normal mode: Ensure the placeholder is reset
+                    document.getElementById('useremail').placeholder = "Email";
                 }
 
                 // --- NEW SCORE DISPLAY WITH RANK ---
                 if (data.score !== undefined) {
                     const scoreDisplay = document.getElementById('user-score-display');
                     scoreDisplay.style.display = 'block';
-
-                    // Show score immediately
                     scoreDisplay.innerHTML = `Current Score: <span id="score-value">${data.score}</span>`;
 
-                    // Fetch rank in background
                     fetch(`${scriptURL}?cmd=leaderboard`)
                         .then(r => r.json())
                         .then(lbData => {
@@ -558,9 +580,7 @@ function loadBracket(spyEmail = null, isSpyMode = false) {
 
                 if (msg && !isSpyMode) {
                     msg.innerText = "Loaded!";
-                    setTimeout(() => {
-                        msg.innerText = "";
-                    }, 2000);
+                    setTimeout(() => { msg.innerText = ""; }, 2000);
                 }
 
                 try { if (data.masterPicks) gradeBracket(data.masterPicks); } catch (err) { }
