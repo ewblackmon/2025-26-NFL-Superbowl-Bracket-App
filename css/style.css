@@ -213,6 +213,7 @@ body {
 /* --- BRACKET LAYOUT --- */
 .bracket-wrapper {
     display: flex;
+    /* CHANGE: Always start from left to prevent clipping */
     justify-content: flex-start;
     padding: 20px;
     gap: 10px;
@@ -220,6 +221,10 @@ body {
     -webkit-overflow-scrolling: touch;
     transition: transform 0.3s ease;
     transform-origin: top left;
+
+    /* CHANGE: Ensure full width for scrolling */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .bracket-wrapper.zoomed-out {
@@ -228,9 +233,19 @@ body {
     justify-content: flex-start;
 }
 
+/* CHANGE: Use Margin-Auto for safe centering on Desktop */
 @media (min-width: 1250px) {
     .bracket-wrapper {
-        justify-content: center;
+        /* Do NOT use justify-content: center here */
+    }
+
+    /* Center the inner content using margins instead */
+    .conference-container:first-child {
+        margin-left: auto;
+    }
+
+    .conference-container:last-child {
+        margin-right: auto;
     }
 }
 
