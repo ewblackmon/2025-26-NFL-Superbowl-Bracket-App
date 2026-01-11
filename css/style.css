@@ -498,3 +498,68 @@ body {
     flex: 0 0 24px !important;
     margin: 0 8px !important;
 }
+
+/* --- LEADERBOARD FIX --- */
+#leaderboard-list {
+    max-height: 60vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Kills the horizontal scrollbar */
+}
+
+.leader-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #333;
+    width: 100%;
+    box-sizing: border-box;
+    /* Ensures padding doesn't expand width */
+}
+
+.leader-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    /* Takes up all extra space */
+    min-width: 0;
+    /* CRITICAL: Allows text to truncate instead of pushing button out */
+    padding-right: 10px;
+    /* Space between name and button */
+}
+
+.leader-name {
+    font-weight: bold;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Adds "..." if name is too long */
+    font-size: 1rem;
+}
+
+.leader-score {
+    color: #00ff00;
+    font-size: 0.9rem;
+}
+
+.btn-spy-action {
+    flex-shrink: 0;
+    /* Prevents button from being squashed */
+    background: #444;
+    color: #fff;
+    border: 1px solid #666;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-right: 5px;
+    /* Pulls button away from the scrollbar */
+}
+
+.btn-spy-action:hover {
+    background: #9b59b6;
+    border-color: #9b59b6;
+}
