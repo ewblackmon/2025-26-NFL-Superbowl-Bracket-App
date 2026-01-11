@@ -1,3 +1,4 @@
+/* --- RESET & BASICS --- */
 :root {
     --bg-color: #121212;
     --card-bg: #2a2a2a;
@@ -6,29 +7,27 @@
     --nfc-color: #004C99;
     --afc-color: #C83803;
     --border-color: #444;
+    --success-green: #2ecc71;
+    --danger-red: #e74c3c;
 }
 
-/* LOCK THE PAGE SCROLLING */
 html,
 body {
     height: 100%;
-    /* Crucial: Limits page to screen height */
     margin: 0;
     overflow: hidden;
-    /* Prevent the whole page from bouncing */
     background-color: var(--bg-color);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .app-container {
     display: flex;
     flex-direction: column;
     height: 100%;
-    /* Fill the locked screen */
     width: 100%;
 }
 
-/* --- HEADER (Reverted to Sticky) --- */
+/* --- HEADER --- */
 .header {
     text-align: center;
     padding: 10px;
@@ -38,14 +37,11 @@ body {
     top: 0;
     z-index: 100;
     width: 100%;
-    box-sizing: border-box;
 }
 
 .header h1 {
-    margin: 5px 0 10px 0;
+    margin: 5px 0;
     color: var(--accent-gold);
-    font-weight: 700;
-    letter-spacing: 1px;
     font-size: 1.5rem;
 }
 
@@ -59,50 +55,27 @@ body {
 
 #score-value {
     color: #00ff00;
-    font-size: 1.3rem;
-    margin-left: 5px;
-    text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
 }
 
-/* --- CONTROLS (Fixed Wrapping) --- */
+/* --- CONTROLS --- */
 .user-controls {
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    /* Stack inputs above buttons */
     gap: 10px;
-    width: 100%;
-    box-sizing: border-box;
+    padding: 0 10px;
 }
 
-.input-group {
-    display: flex;
-    gap: 5px;
-    justify-content: center;
-    width: 100%;
-}
-
+.input-group,
 .btn-group {
     display: flex;
     gap: 5px;
     justify-content: center;
     flex-wrap: wrap;
-    /* CRITICAL FIX: Allows buttons to start a new line */
     width: 100%;
 }
 
-/* Make buttons slightly smaller on mobile to fit better */
-.user-controls button {
-    padding: 8px 12px;
-    font-size: 0.85rem;
-    flex: 1 1 auto;
-    /* Allow buttons to shrink/grow */
-    min-width: 80px;
-    /* Prevent them from getting too skinny */
-}
-
-/* Mobile Input Sizing */
 .user-controls input {
     background: #333;
     border: 1px solid #555;
@@ -110,8 +83,6 @@ body {
     padding: 10px;
     border-radius: 4px;
     font-size: 1rem;
-    max-width: 40vw;
-    box-sizing: border-box;
 }
 
 .user-controls button {
@@ -121,8 +92,9 @@ body {
     font-weight: bold;
     cursor: pointer;
     border-radius: 4px;
-    color: #000;
     font-size: 0.9rem;
+    flex: 1 1 auto;
+    min-width: 80px;
 }
 
 .btn-reset {
@@ -145,45 +117,29 @@ body {
     color: white !important;
 }
 
-/* Orange Zoom Button */
-
 #status-message {
-    margin-top: 5px;
     font-size: 0.8rem;
     color: #888;
     height: 15px;
+    margin-top: 5px;
 }
 
-/* --- BRACKET LAYOUT (Scroll Fix) --- */
+/* --- BRACKET LAYOUT --- */
 .bracket-wrapper {
     display: flex;
     justify-content: flex-start;
-    align-items: stretch;
-    flex-grow: 1;
-    /* Fill remaining vertical space */
     padding: 20px;
     gap: 10px;
-
-    /* FORCE SCROLLING */
-    overflow-x: auto;
-    /* allow horizontal scroll */
-    overflow-y: auto;
-    /* allow vertical scroll */
+    overflow: auto;
     -webkit-overflow-scrolling: touch;
-    /* smooth momentum scrolling on iOS */
-
-    /* ZOOM TRANSITION */
-    transition: transform 0.3s ease, zoom 0.3s ease;
+    transition: transform 0.3s ease;
     transform-origin: top left;
 }
 
-/* --- THE ZOOMED OUT STATE (Fixed) --- */
 .bracket-wrapper.zoomed-out {
-    /* Use standard Transform instead of Zoom */
     transform: scale(0.5);
-
-    /* Force the width to double so the content doesn't crunch */
     width: 200%;
+    justify-content: flex-start;
 }
 
 @media (min-width: 1250px) {
@@ -204,7 +160,6 @@ body {
     margin: 0 0 15px 0;
     font-size: 2rem;
     font-weight: 800;
-    letter-spacing: 2px;
 }
 
 .nfc-color {
@@ -223,6 +178,7 @@ body {
     gap: 15px;
 }
 
+/* DIRECTION LOGIC */
 .left-side {
     flex-direction: row;
     justify-content: flex-end;
@@ -240,18 +196,10 @@ body {
     flex: 1;
 }
 
-.wc-col {
-    flex: 0 0 160px;
-}
-
-.div-col {
-    flex: 0 0 160px;
-    justify-content: space-evenly;
-}
-
+.wc-col,
+.div-col,
 .champ-col {
     flex: 0 0 160px;
-    justify-content: center;
 }
 
 .matchup {
@@ -261,13 +209,13 @@ body {
     gap: 2px;
 }
 
+/* --- TEAM CARD --- */
 .team {
     display: flex;
     align-items: center;
     background: var(--card-bg);
     border: 1px solid #444;
     cursor: pointer;
-    transition: all 0.2s ease;
     height: 36px;
     border-radius: 3px;
     overflow: hidden;
@@ -298,97 +246,112 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem;
     flex-shrink: 0;
-}
-
-.sb-seed {
-    width: 40px;
-    font-size: 0.8rem;
-    letter-spacing: 0.5px;
 }
 
 .nfc-seed {
     background-color: var(--nfc-color) !important;
-    color: #ffffff !important;
+    color: white !important;
 }
 
 .afc-seed {
     background-color: var(--afc-color) !important;
-    color: #ffffff !important;
+    color: white !important;
 }
 
+/* --- TEAM LOGOS (Small) --- */
 .team-logo {
-    height: 24px;
-    width: auto;
+    height: 24px !important;
+    width: 24px !important;
     margin: 0 8px;
+    object-fit: contain;
+    flex-shrink: 0;
 }
 
 .name {
-    padding-right: 10px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     flex-grow: 1;
 }
 
+/* Right side content mirroring */
 .right-side .team {
     flex-direction: row-reverse;
     text-align: right;
 }
 
 .right-side .name {
-    padding-right: 0;
     padding-left: 10px;
 }
 
+
+/* --- CENTER COLUMN (Super Bowl) --- */
+#super-bowl-area,
 .super-bowl-center {
-    flex: 0 0 160px;
+    flex: 0 0 200px !important;
+    /* Widen to 200px to allow logo/text room */
+    width: 200px !important;
+    max-width: 200px !important;
+
     display: flex;
     flex-direction: column;
-
-    /* ANCHOR TO TOP (Keeps scrolling working) */
     justify-content: flex-start;
     align-items: center;
-
     margin: 0 10px;
+    padding-top: 60px;
+    padding-bottom: 20px;
 
-    /* FIX: Use Pixels instead of % so it doesn't jump on tall phones */
-    padding-top: 100px;
-
-    /* SAFETY: Buffer for the bottom champion logo */
-    padding-bottom: 150px;
-
-    height: auto;
+    /* CRITICAL FIX: Allow content to be seen even if slightly oversize */
+    overflow: visible !important;
 }
 
-.sb-logo {
-    text-align: center;
-    color: var(--accent-gold);
-    font-size: 1.8rem;
-    line-height: 1.1;
-    margin-bottom: 20px;
-    font-weight: 900;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.nfl-shield-logo {
-    width: 90px;
-    height: auto;
-    margin-bottom: 5px;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
-}
-
-.sb-roman {
-    font-size: 1.4rem;
+/* --- NFL SHIELD FIX (Smart Selector) --- */
+/* Target any image in the center that is NOT a small team logo */
+#super-bowl-area img:not(.team-logo),
+.super-bowl-center img:not(.team-logo) {
+    width: 135px !important;
+    /* The requested size */
+    max-width: 100% !important;
+    height: auto !important;
     display: block;
-    margin-top: 5px;
+    margin-bottom: 15px;
+    flex: 0 0 auto !important;
+    /* Prevent flexbox resizing */
+    object-fit: contain !important;
 }
+
+/* Ensure Team Logos in Center stay small */
+#super-bowl-area .team-logo,
+.super-bowl-center .team-logo {
+    width: 24px !important;
+    max-width: 24px !important;
+    height: 24px !important;
+    flex: 0 0 24px !important;
+    margin: 0 8px !important;
+}
+
+
+/* --- SUPER BOWL TEXT (Large Gold) --- */
+.sb-logo,
+.super-bowl-center h3,
+.sb-roman {
+    text-align: center;
+    color: var(--accent-gold) !important;
+    font-size: 1.6rem;
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 15px;
+    display: block;
+    text-transform: uppercase;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    /* Ensure it centers in the 200px container */
+}
+
 
 #champion-display {
-    margin-top: 30px;
+    margin-top: 20px;
     text-align: center;
     width: 100%;
     display: flex;
@@ -396,88 +359,96 @@ body {
     align-items: center;
 }
 
-.champ-label {
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    color: #aaa;
-    letter-spacing: 1px;
-    margin-bottom: 5px;
-}
-
 .champ-name {
     font-size: 1.1rem;
     font-weight: 800;
     color: var(--accent-gold);
-    text-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
     margin-bottom: 10px;
-    line-height: 1.2;
 }
 
 .champ-big-logo {
     width: auto;
     max-width: 90%;
     height: 120px;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
-    animation: popIn 0.5s;
 }
 
-@keyframes popIn {
-    from {
-        transform: scale(0);
-        opacity: 0;
-    }
 
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
+/* --- BADGES & GRADING --- */
 
-/* --- COMMUNITY STATS --- */
+/* 1. Statistics Badge */
 .stat-badge {
     font-size: 0.75rem;
     color: #888;
     background: #222;
     padding: 2px 6px;
     border-radius: 4px;
-    margin-left: 8px;
+    margin: 0 5px;
     border: 1px solid #444;
-    font-weight: normal;
 }
 
-.team.selected .stat-badge {
-    color: #333;
-    background: #e0e0e0;
-    border-color: #ccc;
-    font-weight: bold;
+/* 2. Checkmarks WITH POINTS (+2) */
+.team.selected.correct.wc::after {
+    content: '✔ +2';
+    color: var(--success-green);
+    font-weight: 900;
+    margin: 0 5px;
+    font-size: 0.85rem;
+    white-space: nowrap;
 }
 
-.right-side .stat-badge {
-    margin-left: 0;
-    margin-right: 8px;
+.team.selected.correct.div::after {
+    content: '✔ +3';
+    color: var(--success-green);
+    font-weight: 900;
+    margin: 0 5px;
+    font-size: 0.85rem;
+    white-space: nowrap;
 }
 
-/* --- GRADING STYLES --- */
+.team.selected.correct.champ::after {
+    content: '✔ +5';
+    color: var(--success-green);
+    font-weight: 900;
+    margin: 0 5px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.team.selected.correct.sb::after {
+    content: '✔ +10';
+    color: var(--success-green);
+    font-weight: 900;
+    margin: 0 5px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.team.selected.incorrect::after {
+    content: '✗';
+    color: var(--danger-red);
+    font-weight: 900;
+    margin: 0 5px;
+    font-size: 1.1rem;
+}
+
+/* 3. Grading Colors */
 .team.selected {
-    background-color: #ffffff !important;
-    border-color: #ffffff !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-    transform: scale(1.02);
-    z-index: 10;
+    background-color: white !important;
+    border-color: white !important;
     opacity: 1 !important;
 }
 
 .team.selected .name {
-    color: #000000 !important;
+    color: black !important;
     font-weight: 800;
 }
 
 .team.selected.correct {
-    border: 3px solid #00aa00 !important;
+    border: 3px solid var(--success-green) !important;
 }
 
 .team.selected.incorrect {
-    border: 3px solid #ff0000 !important;
+    border: 3px solid var(--danger-red) !important;
 }
 
 .team.selected.incorrect .name {
@@ -485,111 +456,11 @@ body {
     color: #cc0000 !important;
 }
 
-.team.selected.incorrect::after {
-    content: "✘";
-    color: #ff0000;
-    font-weight: 900;
-    position: absolute;
-    right: 10px;
-    font-size: 1.1rem;
-}
-
-.team.selected.correct.wc::after {
-    content: "✔ +2";
-    color: #00aa00;
-    font-weight: 900;
-    position: absolute;
-    right: 5px;
-    font-size: 0.9rem;
-}
-
-.team.selected.correct.div::after {
-    content: "✔ +3";
-    color: #00aa00;
-    font-weight: 900;
-    position: absolute;
-    right: 5px;
-    font-size: 0.9rem;
-}
-
-.team.selected.correct.champ::after {
-    content: "✔ +5";
-    color: #00aa00;
-    font-weight: 900;
-    position: absolute;
-    right: 5px;
-    font-size: 0.9rem;
-}
-
-.team.selected.correct.sb::after {
-    content: "✔ +10";
-    color: #00aa00;
-    font-weight: 900;
-    position: absolute;
-    right: 5px;
-    font-size: 0.9rem;
-}
-
-.right-side .team.selected.correct.wc::after,
-.right-side .team.selected.correct.div::after,
-.right-side .team.selected.correct.champ::after,
-.right-side .team.selected.incorrect::after {
-    right: auto;
-    left: 10px;
-}
-
+/* Eliminated styling */
 .team.eliminated {
     background-color: #1a1a1a !important;
-    border-color: #333 !important;
-    color: #555 !important;
-    text-decoration: line-through;
     opacity: 0.4 !important;
     filter: grayscale(100%);
-    pointer-events: none;
-    box-shadow: none !important;
-    transform: none !important;
-}
-
-.team.eliminated .team-logo,
-.team.eliminated .name {
-    opacity: 0.5;
-    filter: grayscale(100%);
-    color: #555 !important;
-    font-weight: normal !important;
-}
-
-/* --- SPY BANNER --- */
-#spy-banner {
-    display: none;
-    background: #c0392b;
-    color: white;
-    padding: 10px;
-    text-align: center;
-    position: sticky;
-    top: 0;
-    z-index: 200;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    animation: slideDown 0.3s;
-}
-
-#spy-banner button {
-    background: white;
-    color: #c0392b;
-    border: none;
-    padding: 5px 15px;
-    margin-left: 15px;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 4px;
-}
-
-body.spy-mode .user-controls {
-    opacity: 0.3;
-    pointer-events: none;
-}
-
-body.spy-mode .header {
-    border-bottom: none;
 }
 
 /* --- MODALS --- */
@@ -614,222 +485,11 @@ body.spy-mode .header {
     max-width: 350px;
     color: #fff;
     border-radius: 12px;
-    position: relative;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
-    animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-    from {
-        transform: translateY(-50px);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
 }
 
 .close-btn {
-    color: #aaa;
     float: right;
     font-size: 28px;
-    font-weight: bold;
     cursor: pointer;
-    line-height: 20px;
-}
-
-.close-btn:hover {
-    color: #fff;
-}
-
-.modal h2 {
-    color: var(--accent-gold);
-    border-bottom: 1px solid #444;
-    padding-bottom: 15px;
-    margin-top: 0;
-    text-align: center;
-    font-size: 1.4rem;
-}
-
-.modal ul {
-    list-style: none;
-    padding: 0;
-    margin: 20px 0;
-}
-
-.modal li {
-    padding: 12px 0;
-    border-bottom: 1px solid #333;
-    font-size: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-}
-
-.point-badge {
-    background: #444;
-    color: #fff;
-    font-weight: bold;
-    padding: 4px 8px;
-    border-radius: 4px;
-    margin-right: 15px;
-    min-width: 30px;
-    text-align: center;
-    font-size: 0.9rem;
-}
-
-.point-badge.wc {
-    color: #00aa00;
-    border: 1px solid #00aa00;
-    background: rgba(0, 170, 0, 0.1);
-}
-
-.point-badge.div {
-    color: #00aa00;
-    border: 1px solid #00aa00;
-    background: rgba(0, 170, 0, 0.1);
-}
-
-.point-badge.champ {
-    color: var(--accent-gold);
-    border: 1px solid var(--accent-gold);
-    background: rgba(255, 215, 0, 0.1);
-}
-
-.point-badge.sb {
-    color: #ff4444;
-    border: 1px solid #ff4444;
-    background: rgba(255, 68, 68, 0.1);
-}
-
-.total-score-box {
-    text-align: center;
-    font-size: 1.1rem;
-    margin-top: 20px;
-    background: #333;
-    padding: 10px;
-    border-radius: 8px;
-}
-
-.total-score-box span {
-    color: #00ff00;
-    font-weight: bold;
-    font-size: 1.3rem;
-}
-
-/* LEADERBOARD LIST */
-#leaderboard-list {
-    max-height: 60vh;
-    overflow-y: auto;
-}
-
-.leader-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #333;
-}
-
-.leader-row:nth-child(1) {
-    color: var(--accent-gold);
-    font-weight: bold;
-    font-size: 1.1rem;
-}
-
-.leader-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.leader-name {
-    font-weight: bold;
-    color: #fff;
-}
-
-.leader-score {
-    color: #00ff00;
-    font-size: 0.9rem;
-}
-
-.btn-spy-action {
-    background: #444;
-    color: #fff;
-    border: 1px solid #666;
-    padding: 5px 10px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    border-radius: 4px;
-}
-
-.btn-spy-action:hover {
-    background: #9b59b6;
-    border-color: #9b59b6;
-}
-
-/* --- ZOOM MODE FIXES --- */
-
-/* When zoomed out, remove the big top padding to fit everything on screen */
-.bracket-wrapper.zoomed-out .super-bowl-center {
-    padding-top: 10px !important;
-    /* Shrink gap from 100px to 10px */
-    padding-bottom: 20px !important;
-    /* Remove huge bottom buffer */
-    justify-content: center;
-    /* Center it vertically in the available space */
-}
-
-/* Optional: Ensure the wrapper fills the height so centering works */
-.bracket-wrapper.zoomed-out {
-    align-items: flex-start;
-    /* Keep sides at top, but let center float if needed */
-    height: 100%;
-}
-
-/* --- INFO MODAL UPDATES --- */
-.guide-section {
-    margin-bottom: 20px;
-    border-bottom: 1px solid #333;
-    padding-bottom: 15px;
-}
-
-.guide-section:last-child {
-    border-bottom: none;
-}
-
-.guide-section h3 {
-    color: var(--accent-gold);
-    margin-top: 0;
-    margin-bottom: 10px;
-    font-size: 1.1rem;
-}
-
-.guide-section p {
-    color: #ccc;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    margin: 5px 0;
-}
-
-/* Ensure modal content scrolls on small screens */
-.modal-content {
-    background-color: #222;
-    margin: 5% auto;
-    /* Less margin so it fits better */
-    padding: 25px;
-    border: 1px solid #444;
-    width: 90%;
-    max-width: 400px;
-    /* Slightly wider for reading text */
-    max-height: 80vh;
-    /* Limit height to 80% of screen */
-    overflow-y: auto;
-    /* Enable scrolling inside the box */
-    color: #fff;
-    border-radius: 12px;
-    position: relative;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
-    animation: slideDown 0.3s ease-out;
+    color: #aaa;
 }
