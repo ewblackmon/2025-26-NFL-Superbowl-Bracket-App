@@ -571,3 +571,91 @@ body {
     background-color: #222;
     margin: 10% auto;
     padding: 25px;
+    border: 1px solid #444;
+    width: 90%;
+    max-width: 350px;
+    color: #fff;
+    border-radius: 12px;
+
+    /* --- SCROLL FIX --- */
+    max-height: 80vh;
+    /* Limit height to 80% of viewport */
+    overflow-y: auto;
+    /* Allow vertical scrolling */
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scroll on iPhone */
+}
+
+.close-btn {
+    float: right;
+    font-size: 28px;
+    cursor: pointer;
+    color: #aaa;
+}
+
+/* --- LEADERBOARD FIX --- */
+#leaderboard-list {
+    max-height: 60vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.leader-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #333;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.leader-rank {
+    width: 40px;
+    font-weight: bold;
+    color: var(--accent-gold);
+    font-size: 0.9rem;
+    text-align: center;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.leader-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    padding-right: 10px;
+}
+
+.leader-name {
+    font-weight: bold;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 1rem;
+}
+
+.leader-score {
+    color: #00ff00;
+    font-size: 0.9rem;
+}
+
+.btn-spy-action {
+    flex-shrink: 0;
+    background: #444;
+    color: #fff;
+    border: 1px solid #666;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-right: 5px;
+}
+
+.btn-spy-action:hover {
+    background: #9b59b6;
+    border-color: #9b59b6;
+}
