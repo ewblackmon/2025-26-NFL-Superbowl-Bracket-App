@@ -43,6 +43,17 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchCommunityStats();
     checkDeadlineLock();
 
+    // --- NEW: CHECK URL FOR SPY LINK ---
+    const urlParams = new URLSearchParams(window.location.search);
+    const spyEmail = urlParams.get('spy');
+
+    if (spyEmail) {
+        console.log("🕵️ Spy Link Detected:", spyEmail);
+        // Decode the email (e.g. %40 -> @) and load in Spy Mode (true)
+        loadBracket(decodeURIComponent(spyEmail), true);
+    }
+    // -----------------------------------
+
     const resetBtn = document.getElementById('reset-btn');
     if (resetBtn) resetBtn.addEventListener('click', resetBracket);
 
@@ -210,6 +221,9 @@ function exitSpyMode() {
 
     // 1. Retrieve the original user's email from storage
     const savedEmail = localStorage.getItem('nflBracketEmail');
+
+    // Clear the URL query parameter so refresh doesn't put us back in spy mode
+    window.history.replaceState({}, document.title, window.location.pathname);
 
     // 2. Restore and Reload
     if (savedEmail) {
