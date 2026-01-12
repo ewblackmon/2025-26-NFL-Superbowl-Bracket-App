@@ -589,7 +589,7 @@ function loadBracket(spyEmail = null, isSpyMode = false) {
                     // Input Field Logic
                     if (data.email.toLowerCase() === ADMIN_EMAIL && isSpyMode) {
                         document.getElementById('useremail').value = "";
-                        document.getElementById('useremail').placeholder = "(Hidden)";
+                        document.getElementById('useremail').placeholder = ""; // <--- Changed from "(Hidden)" to empty
                     } else {
                         document.getElementById('useremail').value = data.email;
                     }
