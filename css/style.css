@@ -253,7 +253,11 @@ body {
     display: flex;
     flex-direction: column;
     flex: 0 0 auto;
-    width: 500px;
+
+    /* CHANGE: Allow it to grow to fit the 510px content */
+    width: auto;
+    min-width: 515px;
+    /* Ensures it never squishes */
 }
 
 .conf-header {
