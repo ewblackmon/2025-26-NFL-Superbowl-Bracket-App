@@ -1,5 +1,5 @@
 // Bump this version to v13 (or higher) to force the update
-const CACHE_NAME = 'nfl-bracket-v13';
+const CACHE_NAME = 'nfl-bracket-v14';
 const ASSETS = [
     './',
     './index.html',
