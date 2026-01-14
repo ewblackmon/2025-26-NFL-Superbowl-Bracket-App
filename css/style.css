@@ -20,6 +20,13 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
+/* Force border-box globally to prevent sizing errors */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 .app-container {
     display: flex;
     flex-direction: column;
@@ -212,7 +219,6 @@ body {
     transition: transform 0.3s ease;
     transform-origin: top left;
     width: 100%;
-    box-sizing: border-box;
 }
 
 .bracket-wrapper.zoomed-out {
@@ -532,7 +538,7 @@ body {
     filter: grayscale(100%);
 }
 
-/* --- MODALS --- */
+/* --- MODALS (FIXED) --- */
 .modal {
     display: none;
     position: fixed;
@@ -546,13 +552,18 @@ body {
 }
 
 .modal-content {
+    /* CRITICAL FIX: box-sizing includes padding in width calculation */
+    box-sizing: border-box;
     background-color: #222;
     margin: 5% auto;
-    /* SUPER COMPACT MODE FOR MOBILE */
     padding: 10px;
+    /* This padding is now safely inside the width */
     border: 1px solid #444;
-    width: 98%;
+
+    /* 94% is safer than 98% to avoid edge touching */
+    width: 94%;
     max-width: 380px;
+
     color: #fff;
     border-radius: 12px;
     max-height: 85vh;
@@ -568,7 +579,7 @@ body {
     margin-right: 5px;
 }
 
-/* --- LEADERBOARD (AGGRESSIVE MOBILE FIX) --- */
+/* --- LEADERBOARD --- */
 #leaderboard-list {
     max-height: 70vh;
     overflow-y: auto;
@@ -581,15 +592,12 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 8px 4px;
-    /* Very tight padding */
     border-bottom: 1px solid #333;
     width: 100%;
-    box-sizing: border-box;
 }
 
 .leader-rank {
     width: 25px;
-    /* Shrunk from 40px */
     font-weight: bold;
     color: var(--accent-gold);
     font-size: 0.8rem;
@@ -602,9 +610,7 @@ body {
     display: flex;
     flex-direction: column;
     flex: 1;
-    /* Grow to fill space */
     min-width: 0;
-    /* REQUIRED for text truncation to work in flex */
     padding-right: 5px;
 }
 
@@ -615,7 +621,6 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: 0.9rem;
-    /* Slightly smaller text */
 }
 
 .leader-score {
@@ -629,9 +634,7 @@ body {
     color: #fff;
     border: 1px solid #666;
     padding: 4px 8px;
-    /* Smaller button padding */
     font-size: 0.75rem;
-    /* Smaller button text */
     cursor: pointer;
     border-radius: 4px;
     margin: 0;
