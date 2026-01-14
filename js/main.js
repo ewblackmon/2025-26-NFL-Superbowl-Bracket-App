@@ -1,4 +1,4 @@
-let leaderboardCache = []; // Stores the list for Next/Prev navigation
+let leaderboardCache = []; // Stores the FULL data (scores + picks)
 
 // --- CONFIGURATION ---
 const scriptURL = "https://script.google.com/macros/s/AKfycbyieXUOJqeOh3l4KkrUBYmQkptpsWf-ersSvhFe80sKoUws9fnzAreARW4CrNlpeuKW9Q/exec";
@@ -39,20 +39,32 @@ let picks = { afc: { wcWinners: [], divWinners: [], champion: null }, nfc: { wcW
 let communityStats = {};
 
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. Restore identity first
+    const savedEmail = localStorage.getItem('nflBracketEmail');
+    if (savedEmail) {
+        document.getElementById('useremail').value = savedEmail;
+    }
+
+    // 2. Refresh basic UI
     refreshAllRounds();
     fetchCommunityStats();
     checkDeadlineLock();
 
-    // --- NEW: CHECK URL FOR SPY LINK ---
+    // 3. AUTO-LOAD LEADERBOARD (Instant fetch)
+    // If not a Spy Link, open leaderboard immediately
     const urlParams = new URLSearchParams(window.location.search);
     const spyEmail = urlParams.get('spy');
 
     if (spyEmail) {
+        // If spy link, wait for data then spy
         console.log("🕵️ Spy Link Detected:", spyEmail);
-        // Decode the email (e.g. %40 -> @) and load in Spy Mode (true)
-        loadBracket(decodeURIComponent(spyEmail), true);
+        ensureLeaderboardData().then(() => {
+            loadBracket(decodeURIComponent(spyEmail), true);
+        });
+    } else {
+        // Normal open -> Go straight to leaderboard
+        openLeaderboard();
     }
-    // -----------------------------------
 
     const resetBtn = document.getElementById('reset-btn');
     if (resetBtn) resetBtn.addEventListener('click', resetBracket);
@@ -71,12 +83,9 @@ function checkDeadlineLock() {
     const now = new Date();
     const saveBtn = document.getElementById('btn-save');
     const emailField = document.getElementById('useremail');
-
-    // Check if current user is the Admin OR currently in Admin Mode
     const isMaster = emailField && emailField.value.trim().toLowerCase() === ADMIN_EMAIL;
     const isAdminMode = document.body.classList.contains('admin-mode');
 
-    // IF time is past deadline AND user is NOT master AND NOT in Admin Mode... LOCK IT.
     if (now > LOCK_DATE && !isMaster && !isAdminMode) {
         if (saveBtn) {
             saveBtn.innerText = "🔒 LOCKED";
@@ -118,63 +127,12 @@ function openInfoModal() { document.getElementById('info-modal').style.display =
 function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
 function closeLeaderboard() { document.getElementById('leaderboard-modal').style.display = 'none'; }
 
-// --- LEADERBOARD & ADMIN ---
-function openLeaderboard() {
-    document.getElementById('leaderboard-modal').style.display = 'block';
-    const list = document.getElementById('leaderboard-list');
-    list.innerHTML = '<div style="text-align:center; padding:20px;">Loading Scores...</div>';
-
-    const currentEmail = document.getElementById('useremail').value.trim().toLowerCase();
-    const amIAdmin = (currentEmail === ADMIN_EMAIL);
-
-    fetch(`${scriptURL}?cmd=leaderboard`)
-        .then(r => r.json())
-        .then(data => {
-            if (data.status === 'success') {
-                leaderboardCache = data.leaderboard; // <--- SAVE TO CACHE
-
-                list.innerHTML = '';
-                if (data.leaderboard.length === 0) { list.innerHTML = '<div style="padding:10px;">No brackets saved yet.</div>'; return; }
-
-                if (amIAdmin) {
-                    const header = document.createElement('div');
-                    header.innerHTML = `<div style="background:#c0392b; color:white; padding:5px; text-align:center; margin-bottom:10px; font-weight:bold; border-radius:4px;">🛠️ ADMIN CONSOLE ACTIVE</div>`;
-                    list.appendChild(header);
-                }
-
-                data.leaderboard.forEach((player) => {
-                    const row = document.createElement('div');
-                    row.className = 'leader-row';
-
-                    if (player.email.toLowerCase() === currentEmail) {
-                        row.style.backgroundColor = "#333300";
-                        row.style.border = "1px solid #FFD700";
-                    }
-
-                    let actionButton = '';
-                    if (amIAdmin) {
-                        actionButton = `<button class="btn-spy-action" style="background:#e74c3c; border-color:#c0392b;" onclick="editUser('${player.email}')">✏️ EDIT</button>`;
-                    } else {
-                        actionButton = `<button class="btn-spy-action" onclick="spyOnUser('${player.email}')">VIEW</button>`;
-                    }
-
-                    row.innerHTML = `
-                        <div class="leader-rank">${player.displayRank || '-'}</div>
-                        <div class="leader-info">
-                            <span class="leader-name">${player.name}</span>
-                            <span class="leader-score">${player.score} Pts</span>
-                        </div>
-                        ${actionButton}
-                    `;
-                    list.appendChild(row);
-                });
-            } else { list.innerHTML = 'Error loading leaderboard.'; }
-        });
-}
-
-// Ensure we have the list for navigation
+// --- LEADERBOARD & CACHING ---
 function ensureLeaderboardData() {
+    // If we have data, promise it immediately
     if (leaderboardCache && leaderboardCache.length > 0) return Promise.resolve(leaderboardCache);
+
+    // Otherwise fetch from server
     return fetch(`${scriptURL}?cmd=leaderboard`)
         .then(r => r.json())
         .then(data => {
@@ -186,73 +144,197 @@ function ensureLeaderboardData() {
         });
 }
 
+function openLeaderboard() {
+    const modal = document.getElementById('leaderboard-modal');
+    modal.style.display = 'block';
+
+    const list = document.getElementById('leaderboard-list');
+    // Only show "Loading..." if we don't have data yet
+    if (leaderboardCache.length === 0) {
+        list.innerHTML = '<div style="text-align:center; padding:20px;">Loading Scores...</div>';
+    }
+
+    const currentEmail = document.getElementById('useremail').value.trim().toLowerCase();
+    const amIAdmin = (currentEmail === ADMIN_EMAIL);
+
+    ensureLeaderboardData().then(participants => {
+        renderLeaderboardList(participants, currentEmail, amIAdmin);
+
+        // AUTO-LOAD USER BRACKET if they are identified and bracket is blank
+        // (Optional nice-to-have, but we stick to Leaderboard priority)
+    });
+}
+
+function renderLeaderboardList(participants, currentEmail, amIAdmin) {
+    const list = document.getElementById('leaderboard-list');
+    list.innerHTML = '';
+
+    if (participants.length === 0) { list.innerHTML = '<div style="padding:10px;">No brackets saved yet.</div>'; return; }
+
+    if (amIAdmin) {
+        const header = document.createElement('div');
+        header.innerHTML = `<div style="background:#c0392b; color:white; padding:5px; text-align:center; margin-bottom:10px; font-weight:bold; border-radius:4px;">🛠️ ADMIN CONSOLE ACTIVE</div>`;
+        list.appendChild(header);
+    }
+
+    participants.forEach((player) => {
+        const row = document.createElement('div');
+        row.className = 'leader-row';
+
+        if (player.email.toLowerCase() === currentEmail) {
+            row.style.backgroundColor = "#333300";
+            row.style.border = "1px solid #FFD700";
+        }
+
+        let actionButton = '';
+        if (amIAdmin) {
+            actionButton = `<button class="btn-spy-action" style="background:#e74c3c; border-color:#c0392b;" onclick="editUser('${player.email}')">✏️ EDIT</button>`;
+        } else {
+            // Using the email as ID to find in cache
+            actionButton = `<button class="btn-spy-action" onclick="spyOnUser('${player.email}')">VIEW</button>`;
+        }
+
+        row.innerHTML = `
+            <div class="leader-rank">${player.displayRank || '-'}</div>
+            <div class="leader-info">
+                <span class="leader-name">${player.name}</span>
+                <span class="leader-score">${player.score} Pts</span>
+            </div>
+            ${actionButton}
+        `;
+        list.appendChild(row);
+    });
+}
+
 // Handle Next/Prev Clicks
 function navigateBracket(offset) {
     const currentEmail = document.getElementById('useremail').value.trim().toLowerCase();
     const isAdminMode = document.body.classList.contains('admin-mode');
 
-    ensureLeaderboardData().then(list => {
-        const currentIndex = list.findIndex(p => p.email.toLowerCase() === currentEmail);
-        if (currentIndex === -1) return; // Should not happen
+    if (leaderboardCache.length === 0) return;
 
-        const newIndex = currentIndex + offset;
-        if (newIndex >= 0 && newIndex < list.length) {
-            const nextPlayer = list[newIndex];
-            if (isAdminMode) {
-                editUser(nextPlayer.email);
-            } else {
-                spyOnUser(nextPlayer.email);
-            }
-        }
-    });
+    const currentIndex = leaderboardCache.findIndex(p => p.email.toLowerCase() === currentEmail);
+    if (currentIndex === -1) return;
+
+    const newIndex = currentIndex + offset;
+    if (newIndex >= 0 && newIndex < leaderboardCache.length) {
+        const nextPlayer = leaderboardCache[newIndex];
+        if (isAdminMode) editUser(nextPlayer.email);
+        else spyOnUser(nextPlayer.email);
+    }
 }
 
+// --- INSTANT LOAD FUNCTIONS ---
 function spyOnUser(email) {
     closeLeaderboard();
-    loadBracket(email, true);
+    // Use Cached Data Immediately
+    const cachedUser = leaderboardCache.find(p => p.email.toLowerCase() === email.toLowerCase());
+    if (cachedUser) {
+        loadFromCache(cachedUser, true);
+    } else {
+        // Fallback for safety (though cache should have it)
+        loadBracket(email, true);
+    }
+}
+
+function editUser(email) {
+    closeLeaderboard();
+    document.body.classList.add('admin-mode');
+
+    const cachedUser = leaderboardCache.find(p => p.email.toLowerCase() === email.toLowerCase());
+    if (cachedUser) {
+        loadFromCache(cachedUser, false);
+    } else {
+        document.getElementById('useremail').value = email;
+        loadBracket(null);
+    }
+}
+
+function loadFromCache(userData, isSpyMode) {
+    picks = userData.picks || picks;
+    document.getElementById('username').value = userData.name;
+
+    // Handle Banner
+    const banner = document.getElementById('spy-banner');
+    const isAdmin = document.body.classList.contains('admin-mode');
+
+    if (isSpyMode || isAdmin) {
+        if (isSpyMode) document.body.classList.add('spy-mode');
+        banner.style.display = 'flex';
+        banner.style.background = isAdmin ? '#c0392b' : '#333';
+
+        if (userData.email.toLowerCase() === ADMIN_EMAIL && isSpyMode) {
+            document.getElementById('useremail').value = "";
+            document.getElementById('useremail').placeholder = "";
+        } else {
+            document.getElementById('useremail').value = userData.email;
+        }
+
+        const idx = leaderboardCache.findIndex(p => p.email.toLowerCase() === userData.email.toLowerCase());
+        const prevDisabled = (idx <= 0) ? 'disabled' : '';
+        const nextDisabled = (idx === -1 || idx >= leaderboardCache.length - 1) ? 'disabled' : '';
+        const labelText = isAdmin ? "EDITING:" : "SPYING ON:";
+        const exitAction = isAdmin ? "exitEditMode" : "exitSpyMode";
+        const exitLabel = isAdmin ? "DONE" : "EXIT";
+
+        banner.innerHTML = `
+            <button class="nav-btn" onclick="navigateBracket(-1)" ${prevDisabled}>❮</button>
+            <div class="banner-content">
+                <span>${labelText}</span>
+                <strong id="spy-target-name">${userData.name.toUpperCase()}</strong>
+            </div>
+            <button class="nav-btn" onclick="navigateBracket(1)" ${nextDisabled}>❯</button>
+            <button class="btn-exit-spy" onclick="${exitAction}()">${exitLabel}</button>
+        `;
+    }
+
+    // Score Display
+    const scoreDisplay = document.getElementById('user-score-display');
+    scoreDisplay.style.display = 'block';
+    if (userData.displayRank) {
+        scoreDisplay.innerHTML = `Current Score: <span id="score-value">${userData.score}</span> <span style="color:#888">|</span> <span style="color:#FFD700">${userData.displayRank} Place</span>`;
+    } else {
+        scoreDisplay.innerHTML = `Current Score: <span id="score-value">${userData.score}</span>`;
+    }
+
+    refreshAllRounds();
+    restoreUIFromPicks();
+    checkDeadlineLock();
+
+    // Grade against Official Results (Rank 0 in cache)
+    const masterKey = leaderboardCache.find(p => p.email.toLowerCase() === ADMIN_EMAIL);
+    if (masterKey && masterKey.picks) {
+        gradeBracket(masterKey.picks);
+    }
 }
 
 function exitSpyMode() {
     document.body.classList.remove('spy-mode');
     document.getElementById('spy-banner').style.display = 'none';
-
-    // Reset placeholder in case it was hidden
     document.getElementById('useremail').placeholder = "Email";
 
-    // 1. Retrieve the original user's email from storage
     const savedEmail = localStorage.getItem('nflBracketEmail');
-
-    // Clear the URL query parameter so refresh doesn't put us back in spy mode
     window.history.replaceState({}, document.title, window.location.pathname);
 
-    // 2. Restore and Reload
     if (savedEmail) {
         document.getElementById('useremail').value = savedEmail;
-        loadBracket(); // This will auto-fetch your Name and fill that box too
+        // Try to reload 'My Bracket' from cache if possible
+        const myData = leaderboardCache.find(p => p.email.toLowerCase() === savedEmail.toLowerCase());
+        if (myData) loadFromCache(myData, false);
+        else loadBracket();
     } else {
-        // Fallback: If no user was saved, clear everything
         document.getElementById('useremail').value = "";
         document.getElementById('username').value = "";
         resetBracket();
     }
-
     openLeaderboard();
-}
-
-function editUser(email) {
-    closeLeaderboard();
-    document.body.classList.add('admin-mode'); // Set Mode FIRST
-    document.getElementById('useremail').value = email;
-    loadBracket(null); // LoadBracket will handle the banner now
 }
 
 function exitEditMode() {
     document.body.classList.remove('admin-mode');
     document.getElementById('spy-banner').style.display = 'none';
-
     document.getElementById('useremail').value = ADMIN_EMAIL;
-    loadBracket();
-
+    loadBracket(); // Load master bracket
     openLeaderboard();
 }
 
@@ -558,6 +640,7 @@ function runActualSave(user, email, msg) {
     });
 }
 
+// Fallback load if cache fails
 function loadBracket(spyEmail = null, isSpyMode = false) {
     let email = spyEmail || document.getElementById('useremail').value || localStorage.getItem('nflBracketEmail');
     if (!email) { alert("Enter email."); return; }
@@ -571,81 +654,11 @@ function loadBracket(spyEmail = null, isSpyMode = false) {
         .then(r => r.json())
         .then(data => {
             if (data.status === "found") {
-                picks = data.picks;
-
-                // Always populate Name
-                document.getElementById('username').value = data.name;
-
-                // --- SPY / ADMIN BANNER LOGIC ---
-                const banner = document.getElementById('spy-banner');
-                const isAdmin = document.body.classList.contains('admin-mode');
-
-                if (isSpyMode || isAdmin) {
-                    if (isSpyMode) document.body.classList.add('spy-mode');
-
-                    banner.style.display = 'flex'; // Use Flexbox
-                    banner.style.background = isAdmin ? '#c0392b' : '#333'; // Red for Admin, Dark for Spy
-
-                    // Input Field Logic
-                    if (data.email.toLowerCase() === ADMIN_EMAIL && isSpyMode) {
-                        document.getElementById('useremail').value = "";
-                        document.getElementById('useremail').placeholder = ""; // <--- Changed from "(Hidden)" to empty
-                    } else {
-                        document.getElementById('useremail').value = data.email;
-                    }
-
-                    // Build Banner with Navigation
-                    ensureLeaderboardData().then(list => {
-                        const idx = list.findIndex(p => p.email.toLowerCase() === data.email.toLowerCase());
-                        const prevDisabled = (idx <= 0) ? 'disabled' : '';
-                        const nextDisabled = (idx === -1 || idx >= list.length - 1) ? 'disabled' : '';
-                        const labelText = isAdmin ? "EDITING:" : "SPYING ON:";
-                        const exitAction = isAdmin ? "exitEditMode" : "exitSpyMode";
-                        const exitLabel = isAdmin ? "DONE" : "EXIT";
-
-                        banner.innerHTML = `
-                            <button class="nav-btn" onclick="navigateBracket(-1)" ${prevDisabled}>❮</button>
-                            <div class="banner-content">
-                                <span>${labelText}</span>
-                                <strong id="spy-target-name">${data.name.toUpperCase()}</strong>
-                            </div>
-                            <button class="nav-btn" onclick="navigateBracket(1)" ${nextDisabled}>❯</button>
-                            <button class="btn-exit-spy" onclick="${exitAction}()">${exitLabel}</button>
-                        `;
-                    });
-                } else {
-                    document.getElementById('useremail').placeholder = "Email";
-                }
-
-                // --- SCORE DISPLAY ---
-                if (data.score !== undefined) {
-                    const scoreDisplay = document.getElementById('user-score-display');
-                    scoreDisplay.style.display = 'block';
-                    scoreDisplay.innerHTML = `Current Score: <span id="score-value">${data.score}</span>`;
-
-                    fetch(`${scriptURL}?cmd=leaderboard`)
-                        .then(r => r.json())
-                        .then(lbData => {
-                            if (lbData.status === 'success') {
-                                leaderboardCache = lbData.leaderboard; // Cache here too
-                                const myEntry = lbData.leaderboard.find(p => p.email.toLowerCase() === email.toLowerCase());
-                                if (myEntry) {
-                                    scoreDisplay.innerHTML = `Current Score: <span id="score-value">${data.score}</span> <span style="color:#888">|</span> <span style="color:#FFD700">${myEntry.displayRank} Place</span>`;
-                                }
-                            }
-                        });
-                }
-
-                refreshAllRounds();
-                restoreUIFromPicks();
-                checkDeadlineLock();
-
+                loadFromCache(data, isSpyMode); // Reuse render logic
                 if (msg && !isSpyMode) {
                     msg.innerText = "Loaded!";
                     setTimeout(() => { msg.innerText = ""; }, 2000);
                 }
-
-                try { if (data.masterPicks) gradeBracket(data.masterPicks); } catch (err) { }
             } else {
                 alert("Not found.");
                 if (msg) msg.innerText = "Not found.";
