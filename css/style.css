@@ -589,10 +589,12 @@ body {
 .modal-content {
     background-color: #222;
     margin: 10% auto;
-    padding: 25px;
+    /* FIX: Reduce padding to prevent truncation on mobile */
+    padding: 15px;
     border: 1px solid #444;
-    width: 90%;
-    max-width: 350px;
+    /* FIX: Increase width to utilize more screen */
+    width: 95%;
+    max-width: 380px;
     color: #fff;
     border-radius: 12px;
 
@@ -624,7 +626,8 @@ body {
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
-    padding: 10px;
+    /* FIX: Reduce horizontal padding inside row */
+    padding: 10px 5px;
     border-bottom: 1px solid #333;
     width: 100%;
     box-sizing: border-box;
@@ -671,7 +674,8 @@ body {
     font-size: 0.8rem;
     cursor: pointer;
     border-radius: 4px;
-    margin-right: 5px;
+    /* FIX: Remove margin-right as padding handles it */
+    margin-right: 0;
 }
 
 .btn-spy-action:hover {
