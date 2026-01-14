@@ -222,8 +222,6 @@ body {
 }
 
 @media (min-width: 1250px) {
-    .bracket-wrapper {}
-
     .conference-container:first-child {
         margin-left: auto;
     }
@@ -449,6 +447,7 @@ body {
     margin-bottom: 5px;
 }
 
+/* --- BADGES & GRADING --- */
 .stat-badge {
     font-size: 0.75rem;
     color: #888;
@@ -548,20 +547,15 @@ body {
 
 .modal-content {
     background-color: #222;
-    margin: 10% auto;
-
-    /* FIX 1: Reduce padding significantly to save space */
+    margin: 5% auto;
+    /* SUPER COMPACT MODE FOR MOBILE */
     padding: 10px;
-
     border: 1px solid #444;
-
-    /* FIX 2: Use 98% of the screen width on mobile */
     width: 98%;
     max-width: 380px;
-
     color: #fff;
     border-radius: 12px;
-    max-height: 80vh;
+    max-height: 85vh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 }
@@ -574,9 +568,9 @@ body {
     margin-right: 5px;
 }
 
-/* --- LEADERBOARD FIX --- */
+/* --- LEADERBOARD (AGGRESSIVE MOBILE FIX) --- */
 #leaderboard-list {
-    max-height: 60vh;
+    max-height: 70vh;
     overflow-y: auto;
     overflow-x: hidden;
 }
@@ -584,25 +578,23 @@ body {
 .leader-row {
     display: flex;
     flex-direction: row;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
-
-    /* FIX 3: Remove side padding entirely from rows to give content full width */
-    padding: 10px 0px;
-
+    padding: 8px 4px;
+    /* Very tight padding */
     border-bottom: 1px solid #333;
     width: 100%;
     box-sizing: border-box;
 }
 
 .leader-rank {
-    /* FIX 4: Shrink the Rank column slightly */
-    width: 35px;
+    width: 25px;
+    /* Shrunk from 40px */
     font-weight: bold;
     color: var(--accent-gold);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     text-align: center;
-    margin-right: 5px;
+    margin-right: 4px;
     flex-shrink: 0;
 }
 
@@ -610,8 +602,9 @@ body {
     display: flex;
     flex-direction: column;
     flex: 1;
+    /* Grow to fill space */
     min-width: 0;
-    /* FIX 5: Reduce gap between name and button */
+    /* REQUIRED for text truncation to work in flex */
     padding-right: 5px;
 }
 
@@ -621,12 +614,13 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    /* Slightly smaller text */
 }
 
 .leader-score {
     color: #00ff00;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
 }
 
 .btn-spy-action {
@@ -634,11 +628,13 @@ body {
     background: #444;
     color: #fff;
     border: 1px solid #666;
-    padding: 5px 10px;
-    font-size: 0.8rem;
+    padding: 4px 8px;
+    /* Smaller button padding */
+    font-size: 0.75rem;
+    /* Smaller button text */
     cursor: pointer;
     border-radius: 4px;
-    margin-right: 0;
+    margin: 0;
 }
 
 .btn-spy-action:hover {
