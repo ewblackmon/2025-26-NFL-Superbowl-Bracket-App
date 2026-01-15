@@ -538,7 +538,7 @@ body {
     filter: grayscale(100%);
 }
 
-/* --- MODALS (FIXED: Lower Down & Box Sizing) --- */
+/* --- MODALS (FIXED: Lower Down) --- */
 .modal {
     display: none;
     position: fixed;
@@ -555,6 +555,7 @@ body {
     box-sizing: border-box;
     background-color: #222;
     margin: 18vh auto;
+    /* Keep lowered position */
     padding: 10px;
     border: 1px solid #444;
     width: 94%;
@@ -574,7 +575,7 @@ body {
     margin-right: 5px;
 }
 
-/* --- LEADERBOARD (FIXED: OVERLAP ISSUE) --- */
+/* --- LEADERBOARD (CSS GRID FIX) --- */
 #leaderboard-list {
     max-height: 60vh;
     overflow-y: auto;
@@ -582,35 +583,34 @@ body {
 }
 
 .leader-row {
-    display: flex;
-    flex-direction: row;
+    /* CRITICAL CHANGE: Switch to CSS Grid */
+    display: grid;
+    /* Define 3 columns: Fixed 75px | Flexible middle | Auto-sized button */
+    grid-template-columns: 75px 1fr auto;
     align-items: center;
     padding: 8px 5px;
     border-bottom: 1px solid #333;
     width: 100%;
-    /* GAP is critical here: it creates physical space between columns */
-    gap: 8px;
+    gap: 10px;
+    /* Robust gap between grid cells */
 }
 
 .leader-rank {
-    /* WIDENED to 50px so '1st (Tied)' fits without hitting name */
-    width: 50px;
+    /* Width is now handled by grid-template-columns above */
     font-weight: bold;
     color: var(--accent-gold);
     font-size: 0.8rem;
     text-align: center;
-    flex-shrink: 0;
-    line-height: 1.1;
-    /* Stacks text nicely */
+    white-space: nowrap;
+    /* Ensure rank text stays on one line */
 }
 
 .leader-info {
     display: flex;
     flex-direction: column;
-    flex: 1;
-    /* Take up all remaining space */
-    min-width: 0;
-    /* Required for truncation to work */
+    overflow: hidden;
+    /* Necessary for text truncation inside grid */
+    padding-right: 2px;
 }
 
 .leader-name {
@@ -628,7 +628,7 @@ body {
 }
 
 .btn-spy-action {
-    flex-shrink: 0;
+    /* Width handled by grid (auto) */
     background: #444;
     color: #fff;
     border: 1px solid #666;
