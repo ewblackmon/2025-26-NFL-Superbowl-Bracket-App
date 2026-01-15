@@ -538,7 +538,7 @@ body {
     filter: grayscale(100%);
 }
 
-/* --- MODALS (FIXED: Lower Down) --- */
+/* --- MODALS (FIXED: Lower Down & Box Sizing) --- */
 .modal {
     display: none;
     position: fixed;
@@ -554,20 +554,14 @@ body {
 .modal-content {
     box-sizing: border-box;
     background-color: #222;
-
-    /* CHANGE: Pushed down 18% from the top */
     margin: 18vh auto;
-
     padding: 10px;
     border: 1px solid #444;
     width: 94%;
     max-width: 380px;
     color: #fff;
     border-radius: 12px;
-
-    /* CHANGE: Reduced max-height so the bottom isn't cut off */
     max-height: 70vh;
-
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 }
@@ -580,7 +574,7 @@ body {
     margin-right: 5px;
 }
 
-/* --- LEADERBOARD --- */
+/* --- LEADERBOARD (FIXED: OVERLAP ISSUE) --- */
 #leaderboard-list {
     max-height: 60vh;
     overflow-y: auto;
@@ -590,29 +584,33 @@ body {
 .leader-row {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
     align-items: center;
-    padding: 8px 4px;
+    padding: 8px 5px;
     border-bottom: 1px solid #333;
     width: 100%;
+    /* GAP is critical here: it creates physical space between columns */
+    gap: 8px;
 }
 
 .leader-rank {
-    width: 25px;
+    /* WIDENED to 50px so '1st (Tied)' fits without hitting name */
+    width: 50px;
     font-weight: bold;
     color: var(--accent-gold);
     font-size: 0.8rem;
     text-align: center;
-    margin-right: 4px;
     flex-shrink: 0;
+    line-height: 1.1;
+    /* Stacks text nicely */
 }
 
 .leader-info {
     display: flex;
     flex-direction: column;
     flex: 1;
+    /* Take up all remaining space */
     min-width: 0;
-    padding-right: 5px;
+    /* Required for truncation to work */
 }
 
 .leader-name {
