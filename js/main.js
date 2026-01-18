@@ -159,9 +159,6 @@ function openLeaderboard() {
 
     ensureLeaderboardData().then(participants => {
         renderLeaderboardList(participants, currentEmail, amIAdmin);
-
-        // AUTO-LOAD USER BRACKET if they are identified and bracket is blank
-        // (Optional nice-to-have, but we stick to Leaderboard priority)
     });
 }
 
@@ -321,7 +318,7 @@ function exitSpyMode() {
     document.getElementById('spy-banner').style.display = 'none';
     document.getElementById('useremail').placeholder = "Email";
 
-    // Hide broadcast button on exit
+    // Hide broadcast button
     document.getElementById('btn-broadcast').style.display = 'none';
 
     const savedEmail = localStorage.getItem('nflBracketEmail');
@@ -559,21 +556,20 @@ function resetBracket() {
     refreshAllRounds();
 }
 
-// --- UPDATED SUBMIT BRACKET (BYPASS CONFIRM FOR ADMIN) ---
+// --- SUBMIT ---
 function submitBracket() {
     const now = new Date();
     const emailField = document.getElementById('useremail');
     const isMaster = emailField && emailField.value.trim().toLowerCase() === ADMIN_EMAIL;
     const inAdminMode = document.body.classList.contains('admin-mode');
 
-    // DEADLINE LOGIC
     if (now > LOCK_DATE && !isMaster && !inAdminMode) {
-        alert("⛔ DEADLINE PASSED ⛔\n\nThis bracket is locked.\n\nPlease contact the administrator to request changes.");
+        alert("⛔ DEADLINE PASSED ⛔\n\nBracket locked.");
         return;
     }
 
     if (document.body.classList.contains('spy-mode')) {
-        alert("You are spying! Exit spy mode to save your own bracket.");
+        alert("Exit spy mode first.");
         return;
     }
 
@@ -581,83 +577,42 @@ function submitBracket() {
     const email = document.getElementById('useremail').value;
     const msg = document.getElementById('status-message');
 
-    if (!user || !email) {
-        alert("Name and Email required!");
-        return;
-    }
+    if (!user || !email) { alert("Name and Email required!"); return; }
 
-    if (msg) msg.innerText = "Checking for existing bracket...";
+    if (msg) msg.innerText = "Checking...";
 
-    // CHECK FOR EXISTING
     fetch(`${scriptURL}?email=${encodeURIComponent(email)}`)
         .then(r => r.json())
         .then(data => {
-            if (data.status === "found") {
-                // BYPASS CHECK: IF ADMIN MODE, SAVE IMMEDIATELY (NO CONFIRMATION)
-                if (inAdminMode) {
-                    runActualSave(user, email, msg);
-                }
-                else {
-                    // REGULAR USER: SHOW CONFIRMATION
-                    const confirmOverwrite = confirm(
-                        `⚠️ EXISTING BRACKET FOUND\n\n` +
-                        `We found a saved bracket for "${data.name}" under this email.\n\n` +
-                        `Do you want to OVERWRITE it with what is currently on your screen?\n\n` +
-                        `• Click OK to Save (This OVERWRITES your old bracket)\n` +
-                        `• Click Cancel to Stop`
-                    );
-
-                    if (confirmOverwrite) {
-                        runActualSave(user, email, msg);
-                    } else {
-                        if (msg) msg.innerText = "Save Cancelled.";
-                    }
-                }
+            if (data.status === "found" && !inAdminMode) {
+                if (confirm(`Overwrite bracket for ${data.name}?`)) runActualSave(user, email, msg);
+                else if (msg) msg.innerText = "Cancelled.";
             } else {
-                // No bracket found, save immediately
                 runActualSave(user, email, msg);
             }
-        })
-        .catch(err => {
-            console.error(err);
-            // If check fails, try saving anyway
-            runActualSave(user, email, msg);
         });
 }
 
-// INTERNAL SAVE FUNCTION
 function runActualSave(user, email, msg) {
     if (msg) msg.innerText = "Saving...";
-
     const payload = { name: user, email: email, picks: picks };
-
     fetch(scriptURL, {
         method: 'POST', mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     }).then(() => {
         if (msg) msg.innerText = "Saved!";
-
-        // Update local storage unless Admin Mode
         const amIAdmin = document.body.classList.contains('admin-mode');
-        if (!amIAdmin) {
-            localStorage.setItem('nflBracketEmail', email);
-        }
-
-        alert("Bracket Saved Successfully!");
-    }).catch(e => {
-        alert("Error saving: " + e);
-        if (msg) msg.innerText = "Error.";
-    });
+        if (!amIAdmin) localStorage.setItem('nflBracketEmail', email);
+        alert("Saved!");
+    }).catch(e => { alert("Error: " + e); });
 }
 
-// Fallback load if cache fails
+// --- LOAD ---
 function loadBracket(spyEmail = null, isSpyMode = false) {
     let email = spyEmail || document.getElementById('useremail').value || localStorage.getItem('nflBracketEmail');
     if (!email) { alert("Enter email."); return; }
-
     if (!isSpyMode) document.getElementById('useremail').value = email;
-
     const msg = document.getElementById('status-message');
     if (msg && !isSpyMode) msg.innerText = "Loading...";
 
@@ -665,142 +620,112 @@ function loadBracket(spyEmail = null, isSpyMode = false) {
         .then(r => r.json())
         .then(data => {
             if (data.status === "found") {
-                loadFromCache(data, isSpyMode); // Reuse render logic
-                if (msg && !isSpyMode) {
-                    msg.innerText = "Loaded!";
-                    setTimeout(() => { msg.innerText = ""; }, 2000);
-                }
+                loadFromCache(data, isSpyMode);
+                if (msg && !isSpyMode) { msg.innerText = "Loaded!"; setTimeout(() => { msg.innerText = ""; }, 2000); }
             } else {
-                alert("Not found.");
-                if (msg) msg.innerText = "Not found.";
+                alert("Not found."); if (msg) msg.innerText = "";
             }
         });
 }
 
+// --- GRADING (FIXED LOGIC) ---
 function gradeBracket(master) {
-    let deadTeams = new Set();
-    ['afc', 'nfc'].forEach(conf => {
-        if (master[conf] && master[conf].wcWinners) {
-            master[conf].wcWinners.forEach((mWin, i) => {
-                if (mWin) {
-                    const match = initialData[conf].wildCardMatchups[i];
-                    const loser = (match.home.name === mWin.name) ? match.away.name : match.home.name;
-                    deadTeams.add(loser);
+    let dead = new Set();
+    ['afc', 'nfc'].forEach(c => master[c]?.wcWinners?.forEach((w, i) => {
+        if (w) {
+            const m = initialData[c].wildCardMatchups[i];
+            dead.add(m.home.name === w.name ? m.away.name : m.home.name);
+        }
+    }));
+
+    ['afc', 'nfc'].forEach(c => {
+        // WC Grading
+        picks[c].wcWinners.forEach((u, i) => {
+            if (u) {
+                const e = findTeamElement(c, 'wc', i, u.name);
+                if (master[c].wcWinners[i]) {
+                    e.classList.add(u.name === master[c].wcWinners[i].name ? 'correct' : 'incorrect', 'wc');
                 }
-            });
-        }
-    });
-
-    ['afc', 'nfc'].forEach(conf => {
-        picks[conf].wcWinners.forEach((uPick, i) => {
-            if (!uPick) return;
-            const uiElement = findTeamElement(conf, 'wc', i, uPick.name);
-            if (master[conf] && master[conf].wcWinners && master[conf].wcWinners[i]) {
-                const mPick = master[conf].wcWinners[i];
-                if (uPick.name === mPick.name) uiElement.classList.add('correct', 'wc');
-                else uiElement.classList.add('incorrect');
             }
         });
 
-        picks[conf].divWinners.forEach((uPick, i) => {
-            if (!uPick) return;
-            const uiElement = findTeamElement(conf, 'div', i, uPick.name);
-            if (deadTeams.has(uPick.name)) {
-                uiElement.classList.add('eliminated');
-                uiElement.style.setProperty('background-color', '#2a2a2a', 'important');
-                uiElement.style.setProperty('border-color', '#444444', 'important');
-                uiElement.style.setProperty('opacity', '0.5', 'important');
-                const nameSpan = uiElement.querySelector('.name');
-                if (nameSpan) nameSpan.style.setProperty('color', '#888888', 'important');
-            }
-            else if (master[conf] && master[conf].divWinners) {
-                if (master[conf].divWinners[i] && master[conf].divWinners[i].name === uPick.name) uiElement.classList.add('correct', 'div');
-                else if (master[conf].divWinners[i]) uiElement.classList.add('incorrect');
+        // Div Grading (Fixed Sibling Logic)
+        picks[c].divWinners.forEach((u, i) => {
+            if (u) {
+                const e = findTeamElement(c, 'div', i, u.name);
+
+                // A. Check if eliminated in previous round
+                if (dead.has(u.name)) {
+                    e.classList.add('eliminated');
+                    return;
+                }
+
+                // B. Check if Opponent won (Game Over -> Loss)
+                let opponentName = null;
+                const parent = e.parentElement;
+                if (parent && parent.classList.contains('matchup')) {
+                    const sibling = parent.querySelector(`.team:not([data-name="${u.name}"])`);
+                    if (sibling) opponentName = sibling.getAttribute('data-name');
+                }
+
+                // Check Results using Name Search, not Index
+                const masterDivs = master[c].divWinners || [];
+                const userWon = masterDivs.some(mw => mw && mw.name === u.name);
+                const oppWon = opponentName && masterDivs.some(mw => mw && mw.name === opponentName);
+
+                if (userWon) e.classList.add('correct', 'div');
+                else if (oppWon) e.classList.add('incorrect');
             }
         });
 
-        if (picks[conf].champion) {
-            const uPick = picks[conf].champion;
-            const uiElement = findTeamElement(conf, 'champ', 0, uPick.name);
-            if (deadTeams.has(uPick.name)) {
-                uiElement.classList.add('eliminated');
-                uiElement.style.setProperty('background-color', '#2a2a2a', 'important');
-                uiElement.style.setProperty('border-color', '#444444', 'important');
-                uiElement.style.setProperty('opacity', '0.5', 'important');
-                const nameSpan = uiElement.querySelector('.name');
-                if (nameSpan) nameSpan.style.setProperty('color', '#888888', 'important');
-            }
-            else if (master[conf] && master[conf].champion) {
-                if (master[conf].champion.name === uPick.name) uiElement.classList.add('correct', 'champ');
-                else uiElement.classList.add('incorrect');
+        // Champ Grading (Fixed Sibling Logic)
+        if (picks[c].champion) {
+            const u = picks[c].champion;
+            const e = findTeamElement(c, 'champ', 0, u.name);
+            if (dead.has(u.name)) e.classList.add('eliminated');
+            else {
+                const masterChamp = master[c].champion;
+                if (masterChamp) {
+                    if (masterChamp.name === u.name) e.classList.add('correct', 'champ');
+                    else e.classList.add('incorrect');
+                }
             }
         }
     });
 
+    // Super Bowl Grading
     if (picks.superBowlWinner) {
-        const uiElement = document.querySelector('#super-bowl-matchup .team.selected');
-        if (uiElement) {
-            if (deadTeams.has(picks.superBowlWinner)) {
-                uiElement.classList.add('eliminated');
-                uiElement.style.setProperty('background-color', '#2a2a2a', 'important');
-                uiElement.style.setProperty('border-color', '#444444', 'important');
-                uiElement.style.setProperty('opacity', '0.5', 'important');
-                const nameSpan = uiElement.querySelector('.name');
-                if (nameSpan) nameSpan.style.setProperty('color', '#888888', 'important');
-            }
+        const u = picks.superBowlWinner;
+        const e = document.querySelector('#super-bowl-matchup .team.selected');
+        if (e) {
+            if (dead.has(u)) e.classList.add('eliminated');
             else if (master.superBowlWinner) {
-                if (master.superBowlWinner === picks.superBowlWinner) uiElement.classList.add('correct', 'sb');
-                else uiElement.classList.add('incorrect');
+                if (master.superBowlWinner === u) e.classList.add('correct', 'sb');
+                else e.classList.add('incorrect');
             }
         }
     }
 }
 
-function openBroadcastModal() {
-    document.getElementById('broadcast-modal').style.display = 'block';
-}
-
-function closeBroadcastModal() {
-    document.getElementById('broadcast-modal').style.display = 'none';
-}
-
+// --- BROADCAST LOGIC ---
+function openBroadcastModal() { document.getElementById('broadcast-modal').style.display = 'block'; }
+function closeBroadcastModal() { document.getElementById('broadcast-modal').style.display = 'none'; }
 function sendAppBroadcast() {
     const headline = document.getElementById('broadcast-headline').value;
     const commentary = document.getElementById('broadcast-body').value;
     const email = document.getElementById('useremail').value;
-
-    if (!headline) {
-        alert("Please enter a headline.");
-        return;
-    }
-
-    if (email.toLowerCase() !== ADMIN_EMAIL) {
-        alert("Unauthorized.");
-        return;
-    }
-
-    if (!confirm("⚠️ SEND MASS EMAIL?\n\nThis will send an email to ALL players on the leaderboard.")) return;
-
+    if (!headline) { alert("Headline required."); return; }
+    if (email.toLowerCase() !== ADMIN_EMAIL) { alert("Unauthorized."); return; }
+    if (!confirm("Send email to ALL players?")) return;
     fetch(scriptURL, {
-        method: 'POST',
-        mode: 'no-cors',
+        method: 'POST', mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            action: "broadcast",
-            email: email,
-            headline: headline,
-            commentary: commentary
-        })
-    }).then(() => {
-        alert("Broadcast Request Sent!");
-        closeBroadcastModal();
-    }).catch(e => {
-        alert("Error sending request: " + e);
-    });
+        body: JSON.stringify({ action: "broadcast", email: email, headline: headline, commentary: commentary })
+    }).then(() => { alert("Sent!"); closeBroadcastModal(); }).catch(e => alert(e));
 }
 
-window.onclick = function (event) {
-    if (event.target == document.getElementById('info-modal')) closeInfoModal();
-    if (event.target == document.getElementById('leaderboard-modal')) closeLeaderboard();
-    if (event.target == document.getElementById('broadcast-modal')) closeBroadcastModal();
+window.onclick = function (e) {
+    if (e.target == document.getElementById('info-modal')) closeInfoModal();
+    if (e.target == document.getElementById('leaderboard-modal')) closeLeaderboard();
+    if (e.target == document.getElementById('broadcast-modal')) closeBroadcastModal();
 }
