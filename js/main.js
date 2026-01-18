@@ -258,6 +258,14 @@ function loadFromCache(userData, isSpyMode) {
     const banner = document.getElementById('spy-banner');
     const isAdmin = document.body.classList.contains('admin-mode');
 
+    // *** NEW LOGIC: SHOW BROADCAST BUTTON IF ADMIN VIEWING MASTER BRACKET ***
+    if (userData.email.toLowerCase() === ADMIN_EMAIL) {
+        document.getElementById('btn-broadcast').style.display = 'block';
+    } else {
+        document.getElementById('btn-broadcast').style.display = 'none';
+    }
+    // ************************************************************************
+
     if (isSpyMode || isAdmin) {
         if (isSpyMode) document.body.classList.add('spy-mode');
         banner.style.display = 'flex';
@@ -312,6 +320,9 @@ function exitSpyMode() {
     document.body.classList.remove('spy-mode');
     document.getElementById('spy-banner').style.display = 'none';
     document.getElementById('useremail').placeholder = "Email";
+
+    // Hide broadcast button on exit
+    document.getElementById('btn-broadcast').style.display = 'none';
 
     const savedEmail = localStorage.getItem('nflBracketEmail');
     window.history.replaceState({}, document.title, window.location.pathname);
@@ -745,7 +756,51 @@ function gradeBracket(master) {
     }
 }
 
+function openBroadcastModal() {
+    document.getElementById('broadcast-modal').style.display = 'block';
+}
+
+function closeBroadcastModal() {
+    document.getElementById('broadcast-modal').style.display = 'none';
+}
+
+function sendAppBroadcast() {
+    const headline = document.getElementById('broadcast-headline').value;
+    const commentary = document.getElementById('broadcast-body').value;
+    const email = document.getElementById('useremail').value;
+
+    if (!headline) {
+        alert("Please enter a headline.");
+        return;
+    }
+
+    if (email.toLowerCase() !== ADMIN_EMAIL) {
+        alert("Unauthorized.");
+        return;
+    }
+
+    if (!confirm("⚠️ SEND MASS EMAIL?\n\nThis will send an email to ALL players on the leaderboard.")) return;
+
+    fetch(scriptURL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            action: "broadcast",
+            email: email,
+            headline: headline,
+            commentary: commentary
+        })
+    }).then(() => {
+        alert("Broadcast Request Sent!");
+        closeBroadcastModal();
+    }).catch(e => {
+        alert("Error sending request: " + e);
+    });
+}
+
 window.onclick = function (event) {
     if (event.target == document.getElementById('info-modal')) closeInfoModal();
     if (event.target == document.getElementById('leaderboard-modal')) closeLeaderboard();
+    if (event.target == document.getElementById('broadcast-modal')) closeBroadcastModal();
 }

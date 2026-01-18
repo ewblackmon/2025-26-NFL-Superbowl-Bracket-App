@@ -201,6 +201,13 @@ body {
     color: white !important;
 }
 
+/* NEW: Broadcast Button Style */
+.btn-broadcast {
+    background-color: #c0392b !important;
+    color: var(--accent-gold) !important;
+    border: 1px solid var(--accent-gold) !important;
+}
+
 #status-message {
     font-size: 0.8rem;
     color: #888;
@@ -538,7 +545,7 @@ body {
     filter: grayscale(100%);
 }
 
-/* --- MODALS (FIXED: Lower Down) --- */
+/* --- MODALS --- */
 .modal {
     display: none;
     position: fixed;
@@ -552,19 +559,14 @@ body {
 }
 
 .modal-content {
-    box-sizing: border-box;
     background-color: #222;
-    margin: 18vh auto;
-    /* Keep lowered position */
-    padding: 10px;
+    margin: 10% auto;
+    padding: 25px;
     border: 1px solid #444;
-    width: 94%;
-    max-width: 380px;
+    width: 90%;
+    max-width: 400px;
     color: #fff;
     border-radius: 12px;
-    max-height: 70vh;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
 }
 
 .close-btn {
@@ -572,71 +574,51 @@ body {
     font-size: 28px;
     cursor: pointer;
     color: #aaa;
-    margin-right: 5px;
 }
 
-/* --- LEADERBOARD (CSS GRID FIX) --- */
+/* --- LEADERBOARD --- */
 #leaderboard-list {
-    max-height: 60vh;
+    max-height: 300px;
     overflow-y: auto;
-    overflow-x: hidden;
 }
 
 .leader-row {
-    /* CRITICAL CHANGE: Switch to CSS Grid */
-    display: grid;
-    /* Define 3 columns: Fixed 75px | Flexible middle | Auto-sized button */
-    grid-template-columns: 75px 1fr auto;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    padding: 8px 5px;
+    padding: 10px 0;
     border-bottom: 1px solid #333;
-    width: 100%;
-    gap: 10px;
-    /* Robust gap between grid cells */
 }
 
 .leader-rank {
-    /* Width is now handled by grid-template-columns above */
+    width: 30px;
     font-weight: bold;
     color: var(--accent-gold);
-    font-size: 0.8rem;
-    text-align: center;
-    white-space: nowrap;
-    /* Ensure rank text stays on one line */
 }
 
 .leader-info {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    /* Necessary for text truncation inside grid */
-    padding-right: 2px;
+    flex-grow: 1;
+    margin-left: 10px;
 }
 
 .leader-name {
+    display: block;
     font-weight: bold;
-    color: #fff;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: 0.9rem;
 }
 
 .leader-score {
     color: #00ff00;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
 }
 
 .btn-spy-action {
-    /* Width handled by grid (auto) */
     background: #444;
     color: #fff;
     border: 1px solid #666;
-    padding: 4px 8px;
-    font-size: 0.75rem;
+    padding: 5px 10px;
+    font-size: 0.8rem;
     cursor: pointer;
     border-radius: 4px;
-    margin: 0;
 }
 
 .btn-spy-action:hover {
