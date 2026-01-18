@@ -628,16 +628,74 @@ function loadBracket(spyEmail = null, isSpyMode = false) {
         });
 }
 
-// --- GRADING (FIXED LOGIC) ---
+// --- SMARTER GRADING (Fixes "Wrong Opponent" Bug) ---
 function gradeBracket(master) {
+    // 1. Identify ALL teams that have been eliminated in Reality
     let dead = new Set();
-    ['afc', 'nfc'].forEach(c => master[c]?.wcWinners?.forEach((w, i) => {
-        if (w) {
-            const m = initialData[c].wildCardMatchups[i];
-            dead.add(m.home.name === w.name ? m.away.name : m.home.name);
-        }
-    }));
 
+    ['afc', 'nfc'].forEach(conf => {
+        // A. Find Wild Card Losers
+        if (master[conf]?.wcWinners) {
+            master[conf].wcWinners.forEach((mWin, i) => {
+                if (mWin) {
+                    const match = initialData[conf].wildCardMatchups[i];
+                    const loser = (match.home.name === mWin.name) ? match.away.name : match.home.name;
+                    dead.add(loser);
+                }
+            });
+        }
+
+        // B. Find Divisional Losers (Simulate Reality)
+        // We must reconstruct who played who in the Official Bracket to know who lost
+        const mWcWinners = master[conf]?.wcWinners?.filter(w => w);
+        if (mWcWinners && mWcWinners.length === 3) {
+            // Re-seed to find official matchups
+            const sorted = [...mWcWinners].sort((a, b) => a.seed - b.seed);
+            const worst = sorted.pop(); // Plays Bye (Seed 1)
+            const best = sorted[0];     // Plays Middle
+            const mid = sorted[1];
+
+            const byeTeam = initialData[conf].bye;
+            const officialMatchups = [
+                { p1: byeTeam, p2: worst }, // Matchup 0
+                { p1: best, p2: mid }       // Matchup 1
+            ];
+
+            // Check if these matchups have winners in Master
+            if (master[conf].divWinners) {
+                officialMatchups.forEach((match, i) => {
+                    const mWin = master[conf].divWinners[i];
+                    if (mWin) {
+                        const loser = (match.p1.name === mWin.name) ? match.p2.name : match.p1.name;
+                        dead.add(loser); // Mark the REAL loser as dead
+                    }
+                });
+            }
+        }
+
+        // C. Find Conference Losers
+        if (master[conf]?.champion) {
+            const mChamp = master[conf].champion;
+            const mDivs = master[conf].divWinners;
+            if (mDivs && mDivs.length === 2 && mDivs[0] && mDivs[1]) {
+                const loser = (mDivs[0].name === mChamp.name) ? mDivs[1].name : mDivs[0].name;
+                dead.add(loser);
+            }
+        }
+
+        // D. Find Super Bowl Loser
+        if (master.superBowlWinner) {
+            const mSb = master.superBowlWinner;
+            const afcChamp = master.afc?.champion;
+            const nfcChamp = master.nfc?.champion;
+            if (afcChamp && nfcChamp) {
+                const loser = (afcChamp.name === mSb) ? nfcChamp.name : afcChamp.name;
+                dead.add(loser);
+            }
+        }
+    });
+
+    // 2. Grade the User's Bracket based on Dead Teams & Official Winners
     ['afc', 'nfc'].forEach(c => {
         // WC Grading
         picks[c].wcWinners.forEach((u, i) => {
@@ -649,46 +707,34 @@ function gradeBracket(master) {
             }
         });
 
-        // Div Grading (Fixed Sibling Logic)
+        // Div Grading
         picks[c].divWinners.forEach((u, i) => {
             if (u) {
                 const e = findTeamElement(c, 'div', i, u.name);
 
-                // A. Check if eliminated in previous round
+                // If team is dead in reality (e.g. Buffalo), mark eliminated immediately
                 if (dead.has(u.name)) {
-                    e.classList.add('eliminated');
-                    return;
+                    e.classList.add('eliminated'); // Grey out / Red X equivalent
+                    e.classList.add('incorrect');  // Force Red X
                 }
-
-                // B. Check if Opponent won (Game Over -> Loss)
-                let opponentName = null;
-                const parent = e.parentElement;
-                if (parent && parent.classList.contains('matchup')) {
-                    const sibling = parent.querySelector(`.team:not([data-name="${u.name}"])`);
-                    if (sibling) opponentName = sibling.getAttribute('data-name');
+                // Else if they won in reality (and aren't dead), mark correct
+                else {
+                    const masterDivs = master[c].divWinners || [];
+                    const userWon = masterDivs.some(mw => mw && mw.name === u.name);
+                    if (userWon) e.classList.add('correct', 'div');
                 }
-
-                // Check Results using Name Search, not Index
-                const masterDivs = master[c].divWinners || [];
-                const userWon = masterDivs.some(mw => mw && mw.name === u.name);
-                const oppWon = opponentName && masterDivs.some(mw => mw && mw.name === opponentName);
-
-                if (userWon) e.classList.add('correct', 'div');
-                else if (oppWon) e.classList.add('incorrect');
             }
         });
 
-        // Champ Grading (Fixed Sibling Logic)
+        // Champ Grading
         if (picks[c].champion) {
             const u = picks[c].champion;
             const e = findTeamElement(c, 'champ', 0, u.name);
-            if (dead.has(u.name)) e.classList.add('eliminated');
-            else {
+            if (dead.has(u.name)) {
+                e.classList.add('eliminated', 'incorrect');
+            } else {
                 const masterChamp = master[c].champion;
-                if (masterChamp) {
-                    if (masterChamp.name === u.name) e.classList.add('correct', 'champ');
-                    else e.classList.add('incorrect');
-                }
+                if (masterChamp && masterChamp.name === u.name) e.classList.add('correct', 'champ');
             }
         }
     });
@@ -698,10 +744,10 @@ function gradeBracket(master) {
         const u = picks.superBowlWinner;
         const e = document.querySelector('#super-bowl-matchup .team.selected');
         if (e) {
-            if (dead.has(u)) e.classList.add('eliminated');
-            else if (master.superBowlWinner) {
-                if (master.superBowlWinner === u) e.classList.add('correct', 'sb');
-                else e.classList.add('incorrect');
+            if (dead.has(u)) {
+                e.classList.add('eliminated', 'incorrect');
+            } else if (master.superBowlWinner === u) {
+                e.classList.add('correct', 'sb');
             }
         }
     }
