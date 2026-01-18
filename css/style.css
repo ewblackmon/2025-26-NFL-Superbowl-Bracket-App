@@ -576,10 +576,13 @@ body {
     color: #aaa;
 }
 
-/* --- LEADERBOARD --- */
+/* --- LEADERBOARD HEIGHT FIX --- */
 #leaderboard-list {
-    max-height: 300px;
+    /* CHANGED: Replaced '300px' with '65vh' to fill the screen vertically */
+    max-height: 65vh;
     overflow-y: auto;
+    /* Prevent the background from scrolling when you hit the end of the list */
+    overscroll-behavior: contain;
 }
 
 .leader-row {
@@ -591,19 +594,27 @@ body {
 }
 
 .leader-rank {
-    width: 30px;
+    /* CHANGED: Increased from 30px to 40px to prevent overlap */
+    width: 40px;
     font-weight: bold;
     color: var(--accent-gold);
+    flex-shrink: 0;
+    text-align: center;
 }
 
 .leader-info {
     flex-grow: 1;
     margin-left: 10px;
+    min-width: 0;
+    /* Ensures text truncation works */
 }
 
 .leader-name {
     display: block;
     font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .leader-score {
@@ -619,6 +630,7 @@ body {
     font-size: 0.8rem;
     cursor: pointer;
     border-radius: 4px;
+    flex-shrink: 0;
 }
 
 .btn-spy-action:hover {
