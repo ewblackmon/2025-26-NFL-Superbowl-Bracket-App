@@ -295,7 +295,7 @@ body {
     gap: 2px;
 }
 
-/* --- TEAM CARD --- */
+/* --- TEAM CARD CONTAINER --- */
 .team {
     display: flex;
     align-items: center;
@@ -308,7 +308,21 @@ body {
     font-size: 0.9rem;
     font-weight: 500;
     color: var(--text-highlight);
+
+    /* CRITICAL FIX: Reserve space on the edges for the absolute badge */
     position: relative;
+    padding-right: 45px;
+    /* NFC: Badge lives here */
+}
+
+.right-side .team {
+    flex-direction: row-reverse;
+    text-align: right;
+
+    /* AFC Flip: Clear right padding, add left padding */
+    padding-right: 0;
+    padding-left: 45px;
+    /* AFC: Badge lives here */
 }
 
 .team:hover {
@@ -353,22 +367,22 @@ body {
     flex-shrink: 0;
 }
 
-/* --- NAME (Prevent Growing to keep score close) --- */
+/* --- NAME --- */
 .name {
-    flex-grow: 0;
-    flex-shrink: 1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.right-side .team {
-    flex-direction: row-reverse;
-    text-align: right;
+    /* Allow shrinking, but don't force expansion so score stays close */
+    flex: 0 1 auto;
+    margin-right: 5px;
+    /* Gap before score/percentage */
 }
 
 .right-side .name {
     padding-left: 10px;
+    margin-right: 0;
+    margin-left: 5px;
+    /* Gap before score/percentage (AFC) */
 }
 
 /* --- CENTER AREA --- */
@@ -453,36 +467,30 @@ body {
     margin-bottom: 5px;
 }
 
-/* --- BADGES & GRADING --- */
-.stat-badge {
-    font-size: 0.75rem;
-    color: #888;
-    background: #222;
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin: 0 5px;
-    border: 1px solid #444;
-}
-
-/* CHECKMARKS: Pinned to edges (NFC Right, AFC Left) */
+/* --- BADGES & GRADING (ABSOLUTE POSITIONING) --- */
+/* This ensures the badge sits in the padding-reserved area and never overlaps content */
 .team.selected.correct::after,
 .team.selected.incorrect::after {
     position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 0;
+    bottom: 0;
+    width: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-weight: 900;
     font-size: 0.85rem;
     white-space: nowrap;
 
-    /* NFC: Right Edge */
-    right: 5px;
+    /* NFC: Pin to right edge */
+    right: 0;
 }
 
-/* AFC: Left Edge */
+/* AFC: Pin to left edge */
 .right-side .team.selected.correct::after,
 .right-side .team.selected.incorrect::after {
     right: auto;
-    left: 5px;
+    left: 0;
 }
 
 .team.selected.correct.wc::after {
@@ -541,6 +549,19 @@ body {
     filter: grayscale(100%);
 }
 
+/* --- PERCENTAGE BADGE --- */
+.stat-badge {
+    font-size: 0.75rem;
+    color: #888;
+    background: #222;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #444;
+
+    /* Sits in flow next to Name. Padding on parent prevents overlap with Checkmark */
+    margin: 0 2px;
+}
+
 /* --- OFFICIAL RESULTS & SCORING STYLES --- */
 
 /* 1. Hide % Badges in Official View */
@@ -548,7 +569,7 @@ body {
     display: none !important;
 }
 
-/* 2. Score Display */
+/* 2. Score Display / Input */
 .team-score,
 .score-input {
     width: 35px;
@@ -558,6 +579,8 @@ body {
     font-size: 1rem;
     flex-shrink: 0;
     z-index: 5;
+    /* Sits in flow next to Name. Padding on parent prevents overlap with Checkmark */
+    margin: 0 2px;
 }
 
 .team-score {
@@ -588,22 +611,6 @@ body.admin-mode .official-view .score-input {
 
 body.admin-mode .official-view .team-score {
     display: none;
-}
-
-/* NFC Spacing: Name -> 5px -> Score -> 45px -> Badge(Edge) */
-.team .team-score,
-.team .score-input {
-    margin-left: 5px;
-    margin-right: 45px;
-    /* Room for Badge */
-}
-
-/* AFC Spacing: Badge(Edge) <- 45px <- Score <- 5px <- Name */
-.right-side .team .team-score,
-.right-side .team .score-input {
-    margin-left: 45px;
-    /* Room for Badge */
-    margin-right: 5px;
 }
 
 /* --- MODALS --- */
