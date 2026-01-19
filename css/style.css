@@ -37,16 +37,12 @@ body {
 /* --- SPY BANNER & NAV --- */
 #spy-banner {
     display: none;
-    /* Hidden by default */
     position: sticky;
-    /* Keep it visible at top if you scroll */
     top: 0;
     z-index: 200;
     padding: 8px 10px;
     color: white;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-
-    /* Flex Layout for Nav Buttons */
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
@@ -55,13 +51,11 @@ body {
 
 .banner-content {
     flex: 1;
-    /* Takes up all available center space */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     min-width: 0;
-    /* Critical for truncation */
 }
 
 .banner-content span {
@@ -79,7 +73,6 @@ body {
     display: block;
 }
 
-/* Nav Buttons (< and >) */
 .nav-btn {
     background: rgba(0, 0, 0, 0.2) !important;
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
@@ -93,7 +86,6 @@ body {
     justify-content: center;
     border-radius: 50%;
     flex-shrink: 0;
-    /* Prevent squishing */
     cursor: pointer;
 }
 
@@ -106,7 +98,6 @@ body {
     cursor: default;
 }
 
-/* Exit Button */
 .btn-exit-spy {
     background: white !important;
     color: #333 !important;
@@ -210,6 +201,12 @@ body {
     color: white !important;
 }
 
+.btn-broadcast {
+    background-color: #c0392b !important;
+    color: var(--accent-gold) !important;
+    border: 1px solid var(--accent-gold) !important;
+}
+
 #status-message {
     font-size: 0.8rem;
     color: #888;
@@ -220,7 +217,6 @@ body {
 /* --- BRACKET LAYOUT --- */
 .bracket-wrapper {
     display: flex;
-    /* CHANGE: Always start from left to prevent clipping */
     justify-content: flex-start;
     padding: 20px;
     gap: 10px;
@@ -228,8 +224,6 @@ body {
     -webkit-overflow-scrolling: touch;
     transition: transform 0.3s ease;
     transform-origin: top left;
-
-    /* CHANGE: Ensure full width for scrolling */
     width: 100%;
     box-sizing: border-box;
 }
@@ -240,13 +234,7 @@ body {
     justify-content: flex-start;
 }
 
-/* CHANGE: Use Margin-Auto for safe centering on Desktop */
 @media (min-width: 1250px) {
-    .bracket-wrapper {
-        /* Do NOT use justify-content: center here */
-    }
-
-    /* Center the inner content using margins instead */
     .conference-container:first-child {
         margin-left: auto;
     }
@@ -260,11 +248,8 @@ body {
     display: flex;
     flex-direction: column;
     flex: 0 0 auto;
-
-    /* CHANGE: Allow it to grow to fit the 510px content */
     width: auto;
     min-width: 515px;
-    /* Ensures it never squishes */
 }
 
 .conf-header {
@@ -290,7 +275,6 @@ body {
     gap: 15px;
 }
 
-/* DIRECTION LOGIC */
 .left-side {
     flex-direction: row;
     justify-content: flex-end;
@@ -371,7 +355,6 @@ body {
     color: white !important;
 }
 
-/* --- TEAM LOGOS (Small) --- */
 .team-logo {
     height: 24px !important;
     width: 24px !important;
@@ -387,7 +370,6 @@ body {
     flex-grow: 1;
 }
 
-/* Right side content mirroring */
 .right-side .team {
     flex-direction: row-reverse;
     text-align: right;
@@ -397,14 +379,11 @@ body {
     padding-left: 10px;
 }
 
-
-/* --- CENTER COLUMN (Super Bowl) --- */
 #super-bowl-area,
 .super-bowl-center {
     flex: 0 0 200px !important;
     width: 200px !important;
     max-width: 200px !important;
-
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -412,11 +391,9 @@ body {
     margin: 0 10px;
     padding-top: 60px;
     padding-bottom: 20px;
-
     overflow: visible !important;
 }
 
-/* --- NFL SHIELD CENTERED --- */
 #super-bowl-area img:not(.team-logo),
 .super-bowl-center img:not(.team-logo) {
     width: 135px !important;
@@ -428,7 +405,6 @@ body {
     object-fit: contain !important;
 }
 
-/* Ensure Team Logos in Center stay small */
 #super-bowl-area .team-logo,
 .super-bowl-center .team-logo {
     width: 24px !important;
@@ -438,8 +414,6 @@ body {
     margin: 0 8px !important;
 }
 
-
-/* --- SUPER BOWL TEXT (Large Gold) --- */
 .sb-logo,
 .super-bowl-center h3,
 .sb-roman {
@@ -454,7 +428,6 @@ body {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     width: 100%;
 }
-
 
 #champion-display {
     margin-top: 20px;
@@ -480,19 +453,14 @@ body {
 
 .champ-label {
     color: #ccc;
-    /* Light gray/white to stand out */
     font-size: 0.9rem;
-    /* Slightly smaller than the team name */
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: bold;
     margin-bottom: 5px;
 }
 
-
 /* --- BADGES & GRADING --- */
-
-/* 1. Statistics Badge */
 .stat-badge {
     font-size: 0.75rem;
     color: #888;
@@ -503,7 +471,6 @@ body {
     border: 1px solid #444;
 }
 
-/* 2. Checkmarks WITH POINTS (+2) */
 .team.selected.correct.wc::after {
     content: '✔ +2';
     color: var(--success-green);
@@ -548,7 +515,6 @@ body {
     font-size: 1.1rem;
 }
 
-/* 3. Grading Colors */
 .team.selected {
     background-color: white !important;
     border-color: white !important;
@@ -573,12 +539,61 @@ body {
     color: #cc0000 !important;
 }
 
-/* Eliminated styling */
 .team.eliminated {
     background-color: #1a1a1a !important;
     opacity: 0.4 !important;
     filter: grayscale(100%);
 }
+
+/* --- OFFICIAL RESULTS & SCORING STYLES (NEW) --- */
+
+/* 1. HIDE % BADGES on Official View */
+.official-view .stat-badge {
+    display: none !important;
+}
+
+/* 2. SCORE DISPLAY (Static Text) */
+.team-score {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: #fff;
+    margin-left: auto;
+    /* Push to right */
+    padding-left: 8px;
+    display: none;
+    /* Hidden by default */
+}
+
+.official-view .team-score {
+    display: block;
+}
+
+/* 3. SCORE INPUTS (Admin Edit Only) */
+.score-input {
+    width: 35px;
+    height: 24px;
+    background: #fff;
+    color: #000;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-left: auto;
+    display: none;
+    /* Hidden by default */
+}
+
+/* Show inputs ONLY if Admin Mode AND Official View */
+body.admin-mode .official-view .score-input {
+    display: block;
+}
+
+/* If inputs are showing, hide the static text */
+body.admin-mode .official-view .team-score {
+    display: none;
+}
+
 
 /* --- MODALS --- */
 .modal {
@@ -596,22 +611,15 @@ body {
 .modal-content {
     background-color: #222;
     margin: 10% auto;
-    /* FIX: Reduce padding to prevent truncation on mobile */
     padding: 15px;
     border: 1px solid #444;
-    /* FIX: Increase width to utilize more screen */
     width: 95%;
     max-width: 380px;
     color: #fff;
     border-radius: 12px;
-
-    /* --- SCROLL FIX --- */
     max-height: 80vh;
-    /* Limit height to 80% of viewport */
     overflow-y: auto;
-    /* Allow vertical scrolling */
     -webkit-overflow-scrolling: touch;
-    /* Smooth scroll on iPhone */
 }
 
 .close-btn {
@@ -621,7 +629,7 @@ body {
     color: #aaa;
 }
 
-/* --- LEADERBOARD FIX --- */
+/* --- LEADERBOARD --- */
 #leaderboard-list {
     max-height: 60vh;
     overflow-y: auto;
@@ -633,7 +641,6 @@ body {
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
-    /* FIX: Reduce horizontal padding inside row */
     padding: 10px 5px;
     border-bottom: 1px solid #333;
     width: 100%;
@@ -681,18 +688,10 @@ body {
     font-size: 0.8rem;
     cursor: pointer;
     border-radius: 4px;
-    /* FIX: Remove margin-right as padding handles it */
     margin-right: 0;
 }
 
 .btn-spy-action:hover {
     background: #9b59b6;
     border-color: #9b59b6;
-}
-
-/* NEW BUTTON STYLE */
-.btn-broadcast {
-    background-color: #c0392b !important;
-    color: var(--accent-gold) !important;
-    border: 1px solid var(--accent-gold) !important;
 }

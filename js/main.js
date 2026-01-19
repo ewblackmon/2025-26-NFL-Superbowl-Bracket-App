@@ -10,119 +10,37 @@ const ADMIN_EMAIL = "masterkey@masterkey.com";
 
 // --- DATA ---
 const teamFullNames = {
-    "DEN": "Denver Broncos",
-    "PIT": "Pittsburgh Steelers",
-    "HOU": "Houston Texans",
-    "JAX": "Jacksonville Jaguars",
-    "BUF": "Buffalo Bills",
-    "NE": "New England Patriots",
-    "LAC": "Los Angeles Chargers",
-    "SEA": "Seattle Seahawks",
-    "CAR": "Carolina Panthers",
-    "LAR": "Los Angeles Rams",
-    "PHI": "Philadelphia Eagles",
-    "SF": "San Francisco 49ers",
-    "CHI": "Chicago Bears",
-    "GB": "Green Bay Packers"
+    "DEN": "Denver Broncos", "PIT": "Pittsburgh Steelers", "HOU": "Houston Texans",
+    "JAX": "Jacksonville Jaguars", "BUF": "Buffalo Bills", "NE": "New England Patriots",
+    "LAC": "Los Angeles Chargers", "SEA": "Seattle Seahawks", "CAR": "Carolina Panthers",
+    "LAR": "Los Angeles Rams", "PHI": "Philadelphia Eagles", "SF": "San Francisco 49ers",
+    "CHI": "Chicago Bears", "GB": "Green Bay Packers"
 };
 
 const initialData = {
     afc: {
-        bye: {
-            name: "DEN",
-            seed: 1,
-            logo: "https://a.espncdn.com/i/teamlogos/nfl/500/den.png"
-        },
-        wildCardMatchups: [{
-            home: {
-                name: "PIT",
-                seed: 4,
-                logo: "https://a.espncdn.com/i/teamlogos/nfl/500/pit.png"
-            },
-            away: {
-                name: "HOU",
-                seed: 5,
-                logo: "https://a.espncdn.com/i/teamlogos/nfl/500/hou.png"
-            }
-        }, {
-            home: {
-                name: "JAX",
-                seed: 3,
-                logo: "https://a.espncdn.com/i/teamlogos/nfl/500/jax.png"
-            },
-            away: {
-                name: "BUF",
-                seed: 6,
-                logo: "https://a.espncdn.com/i/teamlogos/nfl/500/buf.png"
-            }
-        }, {
-            home: {
-                name: "NE",
-                seed: 2,
-                logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png"
-            },
-            away: {
-                name: "LAC",
-                seed: 7,
-                logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lac.png"
-            }
-        }]
+        bye: { name: "DEN", seed: 1, logo: "https://a.espncdn.com/i/teamlogos/nfl/500/den.png" },
+        wildCardMatchups: [
+            { home: { name: "PIT", seed: 4, logo: "https://a.espncdn.com/i/teamlogos/nfl/500/pit.png" }, away: { name: "HOU", seed: 5, logo: "https://a.espncdn.com/i/teamlogos/nfl/500/hou.png" } },
+            { home: { name: "JAX", seed: 3, logo: "https://a.espncdn.com/i/teamlogos/nfl/500/jax.png" }, away: { name: "BUF", seed: 6, logo: "https://a.espncdn.com/i/teamlogos/nfl/500/buf.png" } },
+            { home: { name: "NE", seed: 2, logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png" }, away: { name: "LAC", seed: 7, logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lac.png" } }
+        ]
     },
     nfc: {
-        bye: {
-            name: "SEA",
-            seed: 1,
-            logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png"
-        },
-        wildCardMatchups: [{
-            home: {
-                name: "CAR",
-                seed: 4,
-                logo: "https://a.espncdn.com/i/teamlogos/nfl/500/car.png"
-            },
-            away: {
-                name: "LAR",
-                seed: 5,
-                logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lar.png"
-            }
-        }, {
-            home: {
-                name: "PHI",
-                seed: 3,
-                logo: "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png"
-            },
-            away: {
-                name: "SF",
-                seed: 6,
-                logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sf.png"
-            }
-        }, {
-            home: {
-                name: "CHI",
-                seed: 2,
-                logo: "https://a.espncdn.com/i/teamlogos/nfl/500/chi.png"
-            },
-            away: {
-                name: "GB",
-                seed: 7,
-                logo: "https://a.espncdn.com/i/teamlogos/nfl/500/gb.png"
-            }
-        }]
+        bye: { name: "SEA", seed: 1, logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png" },
+        wildCardMatchups: [
+            { home: { name: "CAR", seed: 4, logo: "https://a.espncdn.com/i/teamlogos/nfl/500/car.png" }, away: { name: "LAR", seed: 5, logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lar.png" } },
+            { home: { name: "PHI", seed: 3, logo: "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png" }, away: { name: "SF", seed: 6, logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sf.png" } },
+            { home: { name: "CHI", seed: 2, logo: "https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" }, away: { name: "GB", seed: 7, logo: "https://a.espncdn.com/i/teamlogos/nfl/500/gb.png" } }
+        ]
     }
 };
 
 let picks = {
-    afc: {
-        wcWinners: [],
-        divWinners: [],
-        champion: null
-    },
-    nfc: {
-        wcWinners: [],
-        divWinners: [],
-        champion: null
-    },
-    superBowlWinner: null
+    afc: { wcWinners: [], divWinners: [], champion: null },
+    nfc: { wcWinners: [], divWinners: [], champion: null },
+    superBowlWinner: null,
+    scores: {} // Added to store Official Game Scores
 };
 let communityStats = {};
 
@@ -143,18 +61,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 1. Restore identity first
     const savedEmail = localStorage.getItem('nflBracketEmail');
     if (savedEmail) {
         document.getElementById('useremail').value = savedEmail;
     }
 
-    // 2. Refresh basic UI
     refreshAllRounds();
     fetchCommunityStats();
     checkDeadlineLock();
 
-    // 3. AUTO-LOAD LEADERBOARD (Instant fetch)
     const urlParams = new URLSearchParams(window.location.search);
     const spyEmail = urlParams.get('spy');
 
@@ -223,18 +138,22 @@ function getStatBadge(teamName, round) {
     return `<span class="stat-badge">${pct !== undefined ? pct : 0}%</span>`;
 }
 
+// --- NEW HELPER: GET SCORE HTML ---
+function getScoreHTML(conf, round, matchId, teamType) {
+    const key = `${conf}-${round}-${matchId}`;
+    const scoreVal = (picks.scores && picks.scores[key] && picks.scores[key][teamType]) ? picks.scores[key][teamType] : "";
+
+    // Returns HTML for both the static display (viewers) and input box (admin)
+    return `
+        <span class="team-score">${scoreVal}</span>
+        <input type="tel" class="score-input" data-key="${key}" data-type="${teamType}" value="${scoreVal}" onclick="event.stopPropagation()">
+    `;
+}
+
 // --- UI MODALS ---
-function openInfoModal() {
-    document.getElementById('info-modal').style.display = 'block';
-}
-
-function closeInfoModal() {
-    document.getElementById('info-modal').style.display = 'none';
-}
-
-function closeLeaderboard() {
-    document.getElementById('leaderboard-modal').style.display = 'none';
-}
+function openInfoModal() { document.getElementById('info-modal').style.display = 'block'; }
+function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
+function closeLeaderboard() { document.getElementById('leaderboard-modal').style.display = 'none'; }
 
 // --- LEADERBOARD & CACHING ---
 function ensureLeaderboardData() {
@@ -267,10 +186,7 @@ function openLeaderboard() {
 function renderLeaderboardList(participants, currentEmail, amIAdmin) {
     const list = document.getElementById('leaderboard-list');
     list.innerHTML = '';
-    if (participants.length === 0) {
-        list.innerHTML = '<div style="padding:10px;">No brackets saved yet.</div>';
-        return;
-    }
+    if (participants.length === 0) { list.innerHTML = '<div style="padding:10px;">No brackets saved yet.</div>'; return; }
     if (amIAdmin) {
         const header = document.createElement('div');
         header.innerHTML = `<div style="background:#c0392b; color:white; padding:5px; text-align:center; margin-bottom:10px; font-weight:bold; border-radius:4px;">🛠️ ADMIN CONSOLE ACTIVE</div>`;
@@ -294,7 +210,6 @@ function renderLeaderboardList(participants, currentEmail, amIAdmin) {
     });
 }
 
-// Handle Next/Prev Clicks
 function navigateBracket(offset) {
     const currentEmail = document.getElementById('useremail').value.trim().toLowerCase();
     const isAdminMode = document.body.classList.contains('admin-mode');
@@ -309,47 +224,45 @@ function navigateBracket(offset) {
     }
 }
 
-// --- INSTANT LOAD FUNCTIONS ---
 function spyOnUser(email) {
     closeLeaderboard();
     const cachedUser = leaderboardCache.find(p => p.email.toLowerCase() === email.toLowerCase());
-    if (cachedUser) {
-        loadFromCache(cachedUser, true);
-    } else {
-        loadBracket(email, true);
-    }
+    if (cachedUser) loadFromCache(cachedUser, true);
+    else loadBracket(email, true);
 }
 
 function editUser(email) {
     closeLeaderboard();
     document.body.classList.add('admin-mode');
     const cachedUser = leaderboardCache.find(p => p.email.toLowerCase() === email.toLowerCase());
-    if (cachedUser) {
-        loadFromCache(cachedUser, false);
-    } else {
-        document.getElementById('useremail').value = email;
-        loadBracket(null);
-    }
+    if (cachedUser) loadFromCache(cachedUser, false);
+    else { document.getElementById('useremail').value = email; loadBracket(null); }
 }
 
 function loadFromCache(userData, isSpyMode) {
     picks = userData.picks || picks;
+    // Ensure scores object exists if missing
+    if (!picks.scores) picks.scores = {};
+
     document.getElementById('username').value = userData.name;
     const banner = document.getElementById('spy-banner');
     const isAdmin = document.body.classList.contains('admin-mode');
+    const isOfficial = (userData.email.toLowerCase() === ADMIN_EMAIL);
 
-    // --- SHOW BROADCAST BUTTON IF ADMIN ---
-    if (userData.email.toLowerCase() === ADMIN_EMAIL) {
-        document.getElementById('btn-broadcast').style.display = 'block';
-    } else {
-        document.getElementById('btn-broadcast').style.display = 'none';
-    }
+    // --- TOGGLE BROADCAST BUTTON & OFFICIAL VIEW ---
+    document.getElementById('btn-broadcast').style.display = isOfficial ? 'block' : 'none';
+
+    // Add class to body/bracket to handle styling (Hide Badges, Show Scores)
+    const bracketArea = document.getElementById('bracket-area');
+    if (isOfficial) bracketArea.classList.add('official-view');
+    else bracketArea.classList.remove('official-view');
+    // -----------------------------------------------
 
     if (isSpyMode || isAdmin) {
         if (isSpyMode) document.body.classList.add('spy-mode');
         banner.style.display = 'flex';
         banner.style.background = isAdmin ? '#c0392b' : '#333';
-        if (userData.email.toLowerCase() === ADMIN_EMAIL && isSpyMode) {
+        if (isOfficial && isSpyMode) {
             document.getElementById('useremail').value = "";
             document.getElementById('useremail').placeholder = "";
         } else {
@@ -385,6 +298,10 @@ function exitSpyMode() {
     document.getElementById('spy-banner').style.display = 'none';
     document.getElementById('useremail').placeholder = "Email";
     document.getElementById('btn-broadcast').style.display = 'none';
+
+    // Remove Official View Class
+    document.getElementById('bracket-area').classList.remove('official-view');
+
     const savedEmail = localStorage.getItem('nflBracketEmail');
     window.history.replaceState({}, document.title, window.location.pathname);
     if (savedEmail) {
@@ -466,10 +383,12 @@ function renderSuperBowl() {
             <div class="team" data-name="${picks.nfc.champion.name}" onclick="selectWinner('sb', 'sb', 0, '${picks.nfc.champion.name}', 0, this)">
                 <span class="seed sb-seed nfc-seed">NFC</span><img src="${picks.nfc.champion.logo}" class="team-logo"><span class="name">${picks.nfc.champion.name}</span>
                 ${getStatBadge(picks.nfc.champion.name, 'sb')}
+                ${getScoreHTML('sb', 'sb', 0, 'away')}
             </div>
             <div class="team" data-name="${picks.afc.champion.name}" onclick="selectWinner('sb', 'sb', 0, '${picks.afc.champion.name}', 0, this)">
                 <span class="seed sb-seed afc-seed">AFC</span><img src="${picks.afc.champion.logo}" class="team-logo"><span class="name">${picks.afc.champion.name}</span>
                 ${getStatBadge(picks.afc.champion.name, 'sb')}
+                ${getScoreHTML('sb', 'sb', 0, 'home')}
             </div>
         `;
         container.appendChild(div);
@@ -497,10 +416,12 @@ function createMatchupDiv(home, away, conf, round, matchId) {
         <div class="team" data-name="${away.name}" onclick="selectWinner('${conf}', '${round}', ${matchId}, '${away.name}', ${away.seed}, this)">
             <span class="seed">${away.seed}</span><img src="${away.logo}" class="team-logo"><span class="name">${away.name}</span>
             ${getStatBadge(away.name, round)}
+            ${getScoreHTML(conf, round, matchId, 'away')}
         </div>
         <div class="team" data-name="${home.name}" onclick="selectWinner('${conf}', '${round}', ${matchId}, '${home.name}', ${home.seed}, this)">
             <span class="seed">${home.seed}</span><img src="${home.logo}" class="team-logo"><span class="name">${home.name}</span>
             ${getStatBadge(home.name, round)}
+            ${getScoreHTML(conf, round, matchId, 'home')}
         </div>
     `;
     return div;
@@ -624,17 +545,10 @@ function restoreUIFromPicks() {
 function resetBracket() {
     if (!confirm("Clear picks?")) return;
     picks = {
-        afc: {
-            wcWinners: [],
-            divWinners: [],
-            champion: null
-        },
-        nfc: {
-            wcWinners: [],
-            divWinners: [],
-            champion: null
-        },
-        superBowlWinner: null
+        afc: { wcWinners: [], divWinners: [], champion: null },
+        nfc: { wcWinners: [], divWinners: [], champion: null },
+        superBowlWinner: null,
+        scores: {}
     };
     document.getElementById('champion-display').innerHTML = '';
     document.getElementById('user-score-display').style.display = 'none';
@@ -661,6 +575,20 @@ function submitBracket() {
     const user = document.getElementById('username').value;
     const email = document.getElementById('useremail').value;
     const msg = document.getElementById('status-message');
+
+    // --- HARVEST SCORES IF ADMIN ---
+    if (inAdminMode && email.toLowerCase() === ADMIN_EMAIL) {
+        if (!picks.scores) picks.scores = {};
+        document.querySelectorAll('.score-input').forEach(input => {
+            const key = input.dataset.key;
+            const type = input.dataset.type;
+            if (input.value) {
+                if (!picks.scores[key]) picks.scores[key] = {};
+                picks.scores[key][type] = input.value;
+            }
+        });
+    }
+    // -------------------------------
 
     if (!user || !email) {
         alert("Name and Email required!");
