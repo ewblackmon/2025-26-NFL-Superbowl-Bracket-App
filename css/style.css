@@ -353,11 +353,25 @@ body {
     flex-shrink: 0;
 }
 
+/* --- NAME --- */
 .name {
+    /* CHANGED: Do NOT grow to fill space. Use natural width or shrink if needed. */
+    flex-grow: 0;
+    flex-shrink: 1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    flex-grow: 1;
+
+    /* Gap between Name and Score (NFC) */
+    margin-right: 5px;
+}
+
+/* AFC Name Flip */
+.right-side .team .name {
+    padding-left: 0;
+    margin-right: 0;
+    margin-left: 5px;
+    /* Gap between Name and Score (AFC) */
 }
 
 .right-side .team {
@@ -365,9 +379,6 @@ body {
     text-align: right;
 }
 
-.right-side .name {
-    padding-left: 10px;
-}
 
 /* --- CENTER AREA --- */
 #super-bowl-area,
@@ -472,26 +483,15 @@ body {
     font-size: 0.85rem;
     white-space: nowrap;
 
-    /* NFC Default: Badge pushed to Far Right Edge */
+    /* NFC Default: Badge sits at the Far Right Edge */
     right: 5px;
 }
 
-/* AFC OVERRIDE: Badge pushed to Far Left Edge */
+/* AFC OVERRIDE: Badge sits at the Far Left Edge */
 .right-side .team.selected.correct::after,
 .right-side .team.selected.incorrect::after {
     right: auto;
     left: 5px;
-}
-
-/* Padding to prevent text overlap with badges/scores */
-.team .name {
-    padding-right: 80px;
-}
-
-/* Space for Score + Badge */
-.right-side .team .name {
-    padding-right: 0;
-    padding-left: 80px;
 }
 
 .team.selected.correct.wc::after {
@@ -599,19 +599,20 @@ body.admin-mode .official-view .team-score {
     display: none;
 }
 
-/* NFC Score Position: Pushed left of the badge */
+/* NFC Score Position: */
 .team .team-score,
 .team .score-input {
-    margin-left: auto;
+    /* REMOVED: margin-left: auto (This was the spring pushing it away) */
     margin-right: 45px;
-    /* Leave 45px gap for the badge */
+    /* Reserve space for Badge */
 }
 
-/* AFC Score Position: Pushed right of the badge */
+/* AFC Score Position: */
 .right-side .team .team-score,
 .right-side .team .score-input {
+    /* REMOVED: margin-left: 2px override */
     margin-left: 45px;
-    /* Leave 45px gap for the badge */
+    /* Reserve space for Badge (on left) */
     margin-right: 0;
 }
 
