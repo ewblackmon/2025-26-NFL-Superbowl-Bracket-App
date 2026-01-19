@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nfl-bracket-v38';
+const CACHE_NAME = 'nfl-bracket-v39';
 const ASSETS = [
     './',
     './index.html',

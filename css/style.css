@@ -353,25 +353,13 @@ body {
     flex-shrink: 0;
 }
 
-/* --- NAME --- */
+/* --- NAME (Prevent Growing to keep score close) --- */
 .name {
-    /* CHANGED: Do NOT grow to fill space. Use natural width or shrink if needed. */
     flex-grow: 0;
     flex-shrink: 1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-
-    /* Gap between Name and Score (NFC) */
-    margin-right: 5px;
-}
-
-/* AFC Name Flip */
-.right-side .team .name {
-    padding-left: 0;
-    margin-right: 0;
-    margin-left: 5px;
-    /* Gap between Name and Score (AFC) */
 }
 
 .right-side .team {
@@ -379,6 +367,9 @@ body {
     text-align: right;
 }
 
+.right-side .name {
+    padding-left: 10px;
+}
 
 /* --- CENTER AREA --- */
 #super-bowl-area,
@@ -473,7 +464,7 @@ body {
     border: 1px solid #444;
 }
 
-/* FIXED BADGES: Absolute positioning handles both NFC (left->right) and AFC (right->left) */
+/* CHECKMARKS: Pinned to edges (NFC Right, AFC Left) */
 .team.selected.correct::after,
 .team.selected.incorrect::after {
     position: absolute;
@@ -483,11 +474,11 @@ body {
     font-size: 0.85rem;
     white-space: nowrap;
 
-    /* NFC Default: Badge sits at the Far Right Edge */
+    /* NFC: Right Edge */
     right: 5px;
 }
 
-/* AFC OVERRIDE: Badge sits at the Far Left Edge */
+/* AFC: Left Edge */
 .right-side .team.selected.correct::after,
 .right-side .team.selected.incorrect::after {
     right: auto;
@@ -599,21 +590,20 @@ body.admin-mode .official-view .team-score {
     display: none;
 }
 
-/* NFC Score Position: */
+/* NFC Spacing: Name -> 5px -> Score -> 45px -> Badge(Edge) */
 .team .team-score,
 .team .score-input {
-    /* REMOVED: margin-left: auto (This was the spring pushing it away) */
+    margin-left: 5px;
     margin-right: 45px;
-    /* Reserve space for Badge */
+    /* Room for Badge */
 }
 
-/* AFC Score Position: */
+/* AFC Spacing: Badge(Edge) <- 45px <- Score <- 5px <- Name */
 .right-side .team .team-score,
 .right-side .team .score-input {
-    /* REMOVED: margin-left: 2px override */
     margin-left: 45px;
-    /* Reserve space for Badge (on left) */
-    margin-right: 0;
+    /* Room for Badge */
+    margin-right: 5px;
 }
 
 /* --- MODALS --- */
