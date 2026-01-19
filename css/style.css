@@ -462,7 +462,7 @@ body {
     border: 1px solid #444;
 }
 
-/* FIXED BADGES: Absolute positioning to handle NFC/AFC flip cleanly */
+/* FIXED BADGES: Absolute positioning handles both NFC (left->right) and AFC (right->left) */
 .team.selected.correct::after,
 .team.selected.incorrect::after {
     position: absolute;
@@ -472,25 +472,26 @@ body {
     font-size: 0.85rem;
     white-space: nowrap;
 
-    /* NFC Default: Badge sits to the RIGHT of the name/score area */
-    right: 40px;
+    /* NFC Default: Badge pushed to Far Right Edge */
+    right: 5px;
 }
 
-/* AFC OVERRIDE: Badge sits to the LEFT of the name/score area */
+/* AFC OVERRIDE: Badge pushed to Far Left Edge */
 .right-side .team.selected.correct::after,
 .right-side .team.selected.incorrect::after {
     right: auto;
-    left: 40px;
+    left: 5px;
 }
 
-/* Prevent Name from overlapping Badge */
+/* Padding to prevent text overlap with badges/scores */
 .team .name {
-    padding-right: 40px;
+    padding-right: 80px;
 }
 
+/* Space for Score + Badge */
 .right-side .team .name {
     padding-right: 0;
-    padding-left: 40px;
+    padding-left: 80px;
 }
 
 .team.selected.correct.wc::after {
@@ -598,18 +599,19 @@ body.admin-mode .official-view .team-score {
     display: none;
 }
 
-/* NFC Score Position (Right Edge) */
+/* NFC Score Position: Pushed left of the badge */
 .team .team-score,
 .team .score-input {
     margin-left: auto;
-    margin-right: 2px;
+    margin-right: 45px;
+    /* Leave 45px gap for the badge */
 }
 
-/* AFC Score Position (Left Edge) - Note: In Row-Reverse, "Start" is Right, "End" is Left */
+/* AFC Score Position: Pushed right of the badge */
 .right-side .team .team-score,
 .right-side .team .score-input {
-    /* This actually keeps it at the visual Left edge in a row-reverse flex container */
-    margin-left: 2px;
+    margin-left: 45px;
+    /* Leave 45px gap for the badge */
     margin-right: 0;
 }
 
