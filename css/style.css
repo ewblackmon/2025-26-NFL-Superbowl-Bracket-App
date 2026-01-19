@@ -20,7 +20,6 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Force border-box globally */
 *,
 *::before,
 *::after {
@@ -87,15 +86,6 @@ body {
     border-radius: 50%;
     flex-shrink: 0;
     cursor: pointer;
-}
-
-.nav-btn:active {
-    background: rgba(0, 0, 0, 0.5) !important;
-}
-
-.nav-btn:disabled {
-    opacity: 0.3;
-    cursor: default;
 }
 
 .btn-exit-spy {
@@ -379,6 +369,7 @@ body {
     padding-left: 10px;
 }
 
+/* --- CENTER AREA --- */
 #super-bowl-area,
 .super-bowl-center {
     flex: 0 0 200px !important;
@@ -460,7 +451,7 @@ body {
     margin-bottom: 5px;
 }
 
-/* --- BADGES & GRADING --- */
+/* --- BADGES & CHECKMARKS (FIXED ALIGNMENT) --- */
 .stat-badge {
     font-size: 0.75rem;
     color: #888;
@@ -471,47 +462,41 @@ body {
     border: 1px solid #444;
 }
 
+/* CRITICAL FIX: Make Checkmarks Absolute so they don't push the score */
+.team.selected.correct::after,
+.team.selected.incorrect::after {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 900;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
 .team.selected.correct.wc::after {
     content: '✔ +2';
     color: var(--success-green);
-    font-weight: 900;
-    margin: 0 5px;
-    font-size: 0.85rem;
-    white-space: nowrap;
 }
 
 .team.selected.correct.div::after {
     content: '✔ +3';
     color: var(--success-green);
-    font-weight: 900;
-    margin: 0 5px;
-    font-size: 0.85rem;
-    white-space: nowrap;
 }
 
 .team.selected.correct.champ::after {
     content: '✔ +5';
     color: var(--success-green);
-    font-weight: 900;
-    margin: 0 5px;
-    font-size: 0.85rem;
-    white-space: nowrap;
 }
 
 .team.selected.correct.sb::after {
     content: '✔ +10';
     color: var(--success-green);
-    font-weight: 900;
-    margin: 0 5px;
-    font-size: 0.85rem;
-    white-space: nowrap;
 }
 
 .team.selected.incorrect::after {
     content: '✗';
     color: var(--danger-red);
-    font-weight: 900;
-    margin: 0 5px;
     font-size: 1.1rem;
 }
 
@@ -545,30 +530,35 @@ body {
     filter: grayscale(100%);
 }
 
-/* --- OFFICIAL RESULTS & SCORING STYLES (NEW) --- */
+/* --- OFFICIAL RESULTS & SCORING STYLES --- */
 
-/* 1. HIDE % BADGES on Official View */
+/* 1. Hide % Badges in Official View */
 .official-view .stat-badge {
     display: none !important;
 }
 
-/* 2. SCORE DISPLAY (Static Text) */
+/* 2. Score Display (Viewers) */
 .team-score {
     font-weight: 800;
     font-size: 1.1rem;
     color: #fff;
     margin-left: auto;
     /* Push to right */
-    padding-left: 8px;
+    margin-right: 55px;
+    /* CRITICAL: Reserve space for checkmark so all scores align */
     display: none;
-    /* Hidden by default */
 }
 
 .official-view .team-score {
     display: block;
 }
 
-/* 3. SCORE INPUTS (Admin Edit Only) */
+/* Dark Text for selected teams so score is visible */
+.team.selected .team-score {
+    color: #000;
+}
+
+/* 3. Score Input (Admin) */
 .score-input {
     width: 35px;
     height: 24px;
@@ -580,20 +570,18 @@ body {
     font-weight: bold;
     font-size: 0.9rem;
     margin-left: auto;
+    margin-right: 55px;
+    /* CRITICAL: Align with text scores */
     display: none;
-    /* Hidden by default */
 }
 
-/* Show inputs ONLY if Admin Mode AND Official View */
 body.admin-mode .official-view .score-input {
     display: block;
 }
 
-/* If inputs are showing, hide the static text */
 body.admin-mode .official-view .team-score {
     display: none;
 }
-
 
 /* --- MODALS --- */
 .modal {

@@ -40,7 +40,7 @@ let picks = {
     afc: { wcWinners: [], divWinners: [], champion: null },
     nfc: { wcWinners: [], divWinners: [], champion: null },
     superBowlWinner: null,
-    scores: {} // Added to store Official Game Scores
+    scores: {} // NEW: Score Storage
 };
 let communityStats = {};
 
@@ -138,12 +138,10 @@ function getStatBadge(teamName, round) {
     return `<span class="stat-badge">${pct !== undefined ? pct : 0}%</span>`;
 }
 
-// --- NEW HELPER: GET SCORE HTML ---
+// --- NEW: SCORE HTML GENERATOR ---
 function getScoreHTML(conf, round, matchId, teamType) {
     const key = `${conf}-${round}-${matchId}`;
     const scoreVal = (picks.scores && picks.scores[key] && picks.scores[key][teamType]) ? picks.scores[key][teamType] : "";
-
-    // Returns HTML for both the static display (viewers) and input box (admin)
     return `
         <span class="team-score">${scoreVal}</span>
         <input type="tel" class="score-input" data-key="${key}" data-type="${teamType}" value="${scoreVal}" onclick="event.stopPropagation()">
@@ -210,6 +208,7 @@ function renderLeaderboardList(participants, currentEmail, amIAdmin) {
     });
 }
 
+// Handle Next/Prev Clicks
 function navigateBracket(offset) {
     const currentEmail = document.getElementById('useremail').value.trim().toLowerCase();
     const isAdminMode = document.body.classList.contains('admin-mode');
@@ -224,6 +223,7 @@ function navigateBracket(offset) {
     }
 }
 
+// --- INSTANT LOAD FUNCTIONS ---
 function spyOnUser(email) {
     closeLeaderboard();
     const cachedUser = leaderboardCache.find(p => p.email.toLowerCase() === email.toLowerCase());
@@ -241,28 +241,26 @@ function editUser(email) {
 
 function loadFromCache(userData, isSpyMode) {
     picks = userData.picks || picks;
-    // Ensure scores object exists if missing
+    // Ensure scores object
     if (!picks.scores) picks.scores = {};
 
     document.getElementById('username').value = userData.name;
     const banner = document.getElementById('spy-banner');
     const isAdmin = document.body.classList.contains('admin-mode');
+
+    // --- OFFICIAL VIEW TOGGLE ---
     const isOfficial = (userData.email.toLowerCase() === ADMIN_EMAIL);
-
-    // --- TOGGLE BROADCAST BUTTON & OFFICIAL VIEW ---
     document.getElementById('btn-broadcast').style.display = isOfficial ? 'block' : 'none';
-
-    // Add class to body/bracket to handle styling (Hide Badges, Show Scores)
     const bracketArea = document.getElementById('bracket-area');
     if (isOfficial) bracketArea.classList.add('official-view');
     else bracketArea.classList.remove('official-view');
-    // -----------------------------------------------
+    // ----------------------------
 
     if (isSpyMode || isAdmin) {
         if (isSpyMode) document.body.classList.add('spy-mode');
         banner.style.display = 'flex';
         banner.style.background = isAdmin ? '#c0392b' : '#333';
-        if (isOfficial && isSpyMode) {
+        if (userData.email.toLowerCase() === ADMIN_EMAIL && isSpyMode) {
             document.getElementById('useremail').value = "";
             document.getElementById('useremail').placeholder = "";
         } else {
@@ -298,9 +296,7 @@ function exitSpyMode() {
     document.getElementById('spy-banner').style.display = 'none';
     document.getElementById('useremail').placeholder = "Email";
     document.getElementById('btn-broadcast').style.display = 'none';
-
-    // Remove Official View Class
-    document.getElementById('bracket-area').classList.remove('official-view');
+    document.getElementById('bracket-area').classList.remove('official-view'); // Reset
 
     const savedEmail = localStorage.getItem('nflBracketEmail');
     window.history.replaceState({}, document.title, window.location.pathname);
