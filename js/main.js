@@ -40,7 +40,7 @@ let picks = {
     afc: { wcWinners: [], divWinners: [], champion: null },
     nfc: { wcWinners: [], divWinners: [], champion: null },
     superBowlWinner: null,
-    scores: {} // NEW: Score Storage
+    scores: {} // Added for Official Scoring
 };
 let communityStats = {};
 
@@ -61,15 +61,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 1. Restore identity first
     const savedEmail = localStorage.getItem('nflBracketEmail');
     if (savedEmail) {
         document.getElementById('useremail').value = savedEmail;
     }
 
+    // 2. Refresh basic UI
     refreshAllRounds();
     fetchCommunityStats();
     checkDeadlineLock();
 
+    // 3. AUTO-LOAD LEADERBOARD (Instant fetch)
     const urlParams = new URLSearchParams(window.location.search);
     const spyEmail = urlParams.get('spy');
 
@@ -138,7 +141,7 @@ function getStatBadge(teamName, round) {
     return `<span class="stat-badge">${pct !== undefined ? pct : 0}%</span>`;
 }
 
-// --- NEW: SCORE HTML GENERATOR ---
+// --- NEW HELPER: GET SCORE HTML ---
 function getScoreHTML(conf, round, matchId, teamType) {
     const key = `${conf}-${round}-${matchId}`;
     const scoreVal = (picks.scores && picks.scores[key] && picks.scores[key][teamType]) ? picks.scores[key][teamType] : "";
@@ -241,26 +244,29 @@ function editUser(email) {
 
 function loadFromCache(userData, isSpyMode) {
     picks = userData.picks || picks;
-    // Ensure scores object
+    // NEW: Ensure scores object exists
     if (!picks.scores) picks.scores = {};
 
     document.getElementById('username').value = userData.name;
     const banner = document.getElementById('spy-banner');
     const isAdmin = document.body.classList.contains('admin-mode');
 
-    // --- OFFICIAL VIEW TOGGLE ---
+    // NEW: Toggle Broadcast & Official View Class
     const isOfficial = (userData.email.toLowerCase() === ADMIN_EMAIL);
-    document.getElementById('btn-broadcast').style.display = isOfficial ? 'block' : 'none';
     const bracketArea = document.getElementById('bracket-area');
-    if (isOfficial) bracketArea.classList.add('official-view');
-    else bracketArea.classList.remove('official-view');
-    // ----------------------------
+    if (isOfficial) {
+        bracketArea.classList.add('official-view');
+        document.getElementById('btn-broadcast').style.display = 'block';
+    } else {
+        bracketArea.classList.remove('official-view');
+        document.getElementById('btn-broadcast').style.display = 'none';
+    }
 
     if (isSpyMode || isAdmin) {
         if (isSpyMode) document.body.classList.add('spy-mode');
         banner.style.display = 'flex';
         banner.style.background = isAdmin ? '#c0392b' : '#333';
-        if (userData.email.toLowerCase() === ADMIN_EMAIL && isSpyMode) {
+        if (isOfficial && isSpyMode) {
             document.getElementById('useremail').value = "";
             document.getElementById('useremail').placeholder = "";
         } else {
@@ -296,7 +302,7 @@ function exitSpyMode() {
     document.getElementById('spy-banner').style.display = 'none';
     document.getElementById('useremail').placeholder = "Email";
     document.getElementById('btn-broadcast').style.display = 'none';
-    document.getElementById('bracket-area').classList.remove('official-view'); // Reset
+    document.getElementById('bracket-area').classList.remove('official-view'); // Reset view
 
     const savedEmail = localStorage.getItem('nflBracketEmail');
     window.history.replaceState({}, document.title, window.location.pathname);
@@ -661,7 +667,7 @@ function loadBracket(spyEmail = null, isSpyMode = false) {
         .then(r => r.json())
         .then(data => {
             if (data.status === "found") {
-                loadFromCache(data, isSpyMode);
+                loadFromCache(data, isSpyMode); // Reuse render logic
                 if (msg && !isSpyMode) {
                     msg.innerText = "Loaded!";
                     setTimeout(() => {

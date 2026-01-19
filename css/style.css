@@ -451,7 +451,7 @@ body {
     margin-bottom: 5px;
 }
 
-/* --- BADGES & CHECKMARKS (FIXED ALIGNMENT) --- */
+/* --- BADGES & GRADING --- */
 .stat-badge {
     font-size: 0.75rem;
     color: #888;
@@ -462,16 +462,19 @@ body {
     border: 1px solid #444;
 }
 
-/* CRITICAL FIX: Make Checkmarks Absolute so they don't push the score */
+/* FIX: Use Flex/Flow instead of Absolute to prevent AFC overlap/disappearance */
 .team.selected.correct::after,
 .team.selected.incorrect::after {
-    position: absolute;
-    right: 5px;
-    top: 50%;
-    transform: translateY(-50%);
+    /* Restore standard flow */
+    position: static;
+    display: block;
+    /* Fixed width to ensure alignment */
+    width: 45px;
+    text-align: center;
     font-weight: 900;
     font-size: 0.85rem;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .team.selected.correct.wc::after {
@@ -532,20 +535,21 @@ body {
 
 /* --- OFFICIAL RESULTS & SCORING STYLES --- */
 
-/* 1. Hide % Badges in Official View */
+/* 1. Hide % Badges in Official View to save space */
 .official-view .stat-badge {
     display: none !important;
 }
 
-/* 2. Score Display (Viewers) */
+/* 2. Score Display */
 .team-score {
     font-weight: 800;
     font-size: 1.1rem;
     color: #fff;
-    margin-left: auto;
-    /* Push to right */
-    margin-right: 55px;
-    /* CRITICAL: Reserve space for checkmark so all scores align */
+    width: 35px;
+    /* Fixed width column */
+    text-align: center;
+    margin: 0 2px;
+    flex-shrink: 0;
     display: none;
 }
 
@@ -553,7 +557,6 @@ body {
     display: block;
 }
 
-/* Dark Text for selected teams so score is visible */
 .team.selected .team-score {
     color: #000;
 }
@@ -569,9 +572,8 @@ body {
     text-align: center;
     font-weight: bold;
     font-size: 0.9rem;
-    margin-left: auto;
-    margin-right: 55px;
-    /* CRITICAL: Align with text scores */
+    margin: 0 2px;
+    flex-shrink: 0;
     display: none;
 }
 
